@@ -1,0 +1,32 @@
+# Python artifacts
+*.py[cod]
+
+# devops artifacts
+*.egg-info
+devops/*.retry
+
+# project management
+.vagrant
+__pycache__
+.cache
+.coverage
+.coverage-report
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# IDEs
+.idea
+*.swp
+*~
+*.bat
+.TAGS
+
+# IPyNB/Jupyter history
+.ipynb_checkpoints
