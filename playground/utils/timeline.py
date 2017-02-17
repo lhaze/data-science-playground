@@ -7,8 +7,13 @@
     _start:
         name: XV century
         wraith_conversion_factor: 0.2
+1600:
+    alive_population: 7000
+1800:
+    mortality: 0.006
 """
 from collections import OrderedDict
+from operator import itemgetter
 import yaml
 
 
@@ -31,17 +36,26 @@ class Timeline(OrderedDict):
 
     @classmethod
     def create(cls, description):
-        return cls(description)  # TODO
+        # import pdb; pdb.set_trace()
+        return cls(sorted(description.items(), key=itemgetter(0)))
+
+    def property(self, name):
+        for tp, properties in self.items():
+            if name in properties:
+                yield (tp, properties[name])
 
 
 class TimelineEvent(object):
     """An abstraction of an event."""
 
 
-def load_example_timeline():
+def show_example_timeline():
     from pprint import pprint
-    pprint(Timeline.read(__doc__))
+    tl = Timeline.read(__doc__)
+    pprint(tl)
+    print('alive_population: ', tuple(tl.property('alive_population')))
+    print('alive_population: ', dict(tl.property('mortality')))
 
 
 if __name__ == '__main__':
-    load_example_timeline()
+    show_example_timeline()
