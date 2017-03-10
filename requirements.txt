@@ -5,4 +5,5 @@ pandas==0.19.1
 scipy==0.18.1
 scikit-learn==0.18.1
 simpy==3.0.10
-PyYAML==3.12
+ruamel.yaml==0.13.14
+ipython==4.2.1
