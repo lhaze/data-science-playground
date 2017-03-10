@@ -8,7 +8,6 @@
 [1500, 1550]:
         name: XV century
         wraith_conversion_factor: 0.2
-        ephemeral: true
 1600:
     alive_population: 7000
 1800:
@@ -28,10 +27,11 @@ class Timeline(OrderedDict):
     An abstraction over a sequence of events with properities. The event might
     be described as being at a timepoint or extend between two timepoints.
 
-    An event might be annotated as _ephemeral_ which means that it will be
-    interpreted as a ephemeral change of property. This might be useful to
-    describe changes that happens temporally and should not be taken as
-    a datapoint while doing regular interpolation of property values.
+    An event extended between two timepoints is treated as _ephemeral_ which
+    means that it will be interpreted as a ephemeral change of property.
+    This might be useful to describe changes that happens temporally and
+    should not be taken as a datapoint while doing regular interpolation of
+    property values.
     """
 
     # noinspection PyProtectedMember
@@ -93,7 +93,9 @@ class Timeline(OrderedDict):
             >>> i3_5 = Timeline.Index((3, 5))
             >>> i2 < i3
             True
-            >>> i3_5 < i3
+            >>> i3 < i3_5
+            True
+            >>> i3_5 > i3
             True
             >>> i4 > i3_5
             True
@@ -103,13 +105,17 @@ class Timeline(OrderedDict):
             if self._start == other._start:
                 other_end = getattr(other, '_end', None)
                 return (
-                    self._end is not None and
-                    (other_end is None or self._end < other_end)
+                    self._end is None or
+                    (other_end is not None and self._end < other_end)
                 )
             return self._start < other._start
 
         def _is_valid_operand(self, other):
             return hasattr(other, '_start')
+
+        def is_ephemeral(self):
+            """Treat extended events as ephemeral."""
+            return self._end is not None
 
     @classmethod
     def load(cls, filename: str) -> 'Timeline':
@@ -127,8 +133,8 @@ class Timeline(OrderedDict):
 
         >>> Timeline.read(__doc__)
         Timeline(
-            (1500, 1550): {'ephemeral': True, 'name': 'XV century', 'wraith_conversion_factor': 0.2},
             1500: {'alive_population': 5000, 'mortality': 0.015, 'wraith_conversion_factor': 0.4},
+            (1500, 1550): {'name': 'XV century', 'wraith_conversion_factor': 0.2},
             1600: {'alive_population': 7000},
             1800: {'mortality': 0.006, 'wraith_conversion_factor': 0.5},
         )
@@ -159,24 +165,28 @@ class Timeline(OrderedDict):
         content_repr = "\n".join("    {},".format(line) for line in content)
         return "Timeline(\n{}\n)".format(content_repr)
 
-    def property(self, name: str, ephemeral: bool=False) \
+    def property(self, name: str, ephemeral: bool=None) \
             -> Generator[Tuple[Any, Dict], None, None]:
         """
-        Generator that iterates over property of given name. The 'ephemeral'
-        boolean argument switches between only regular or only ephemeral events
-        returned.
+        Generator that iterates over property of given name.
+
+        :param ephemeral: switches between only regular or only ephemeral events
+        returned or both iff not specified (None).
 
         >>> tl = Timeline.read(__doc__)
-        >>> list(tl.property('alive_population'))
-        [(1500, 5000), (1600, 7000)]
+        >>> list(tl.property('wraith_conversion_factor'))
+        [(1500, 0.4), ((1500, 1550), 0.2), (1800, 0.5)]
         >>> list(tl.property('wraith_conversion_factor', ephemeral=True))
         [((1500, 1550), 0.2)]
+        >>> list(tl.property('wraith_conversion_factor', ephemeral=False))
+        [(1500, 0.4), (1800, 0.5)]
         """
         for index, properties in self.items():
-            if name in properties and properties.get('ephemeral', False) == ephemeral:
+            if name in properties and \
+                    (ephemeral is None or index.is_ephemeral() == ephemeral):
                 yield (index, properties[name])
 
-    def property_lists(self, name: str, ephemeral: bool=None) -> Tuple[List, List]:
+    def property_lists(self, name: str) -> Tuple[List, List]:
         """
         Returns two lists for a property of given name. The first one
         contains all regular events, the second - all ephemeral events.
@@ -189,6 +199,6 @@ class Timeline(OrderedDict):
         ephemeral = []
         for index, properties in self.items():
             if name in properties:
-                l = ephemeral if properties.get('ephemeral') else regular
+                l = ephemeral if index.is_ephemeral() else regular
                 l.append((index, properties[name]))
         return regular, ephemeral

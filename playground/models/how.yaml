@@ -1,0 +1,123 @@
+---
+# alive: if not stated otherwise, based on [1]
+# mortality rate: loosely based on [3]
+
+1500:
+    alive: 6500
+    mortality_rate: 0.04
+[1500, 1869]:
+    mortality_rate: 0.1
+1550:
+    alive: 9000
+1564:
+    alive: 10000
+1595:
+    alive: 20000
+1624:
+    alive: 48000
+1700:
+    alive: 39000
+1792:
+    alive: 120000
+1800:
+    alive: 63400
+1810:
+    alive: 78000  # based on [2]
+1830:
+    alive: 139700
+1850:
+    alive: 163600
+1864:
+    alive: 223000
+1870:
+    mortality_rate: 0.033
+[1870, 1909]:
+    mortality_rate: 0.08
+1882:
+    alive: 383000
+1897:
+    alive: 683692
+1899:
+    alive: 645848
+1900:
+    alive: 686000
+1901:
+    alive: 711988
+1910:
+    mortality_rate: 0.02
+[1910, 1920]:
+    mortality_rate: 0.05
+1914:
+    alive: 884500
+1921:
+    alive: 936713
+[1921, 1938]:
+    mortality_rate: 0.03
+    ephemeral: true
+1925:
+    alive: 1003000
+1931:
+    alive: 1179500
+1938:
+    alive: 1265372
+[1938, 1946]:
+    mortality_rate: 0.05
+1939:
+    alive: 1289000
+1941:
+    alive: 1351800
+1943:
+    alive: 1009007
+1945:
+    alive: 422000
+1946:
+    alive: 478755
+[1947, 1980]:
+    mortality_rate: 0.03
+1950:
+    alive: 822036
+1955:
+    alive: 1000577
+1960:
+    alive: 1139189
+1961:
+    alive: 1171400
+1962:
+    alive: 1189600
+1963:
+    alive: 1221900
+1964:
+    alive: 1241000
+1965:
+    alive: 1252558
+1966:
+    alive: 1267800
+1967:
+    alive: 1266700
+1968:
+    alive: 1278800
+1969:
+    alive: 1288400
+1970:
+    alive: 1315648
+1971:
+    alive: 1326200
+1972:
+    alive: 1355900
+1973:
+    alive: 1387800
+1974:
+    alive: 1410387
+1975:
+    alive: 1436122
+1976:
+    alive: 1463400
+1977:
+    alive: 1532100
+1978:
+    alive: 1552300
+1979:
+    alive: 1576600
+1980:
+    alive: 1596073
+    mortality_rate: 0.01
