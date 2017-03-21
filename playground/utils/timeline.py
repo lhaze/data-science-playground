@@ -90,6 +90,7 @@ class Timeline(OrderedDict):
             >>> i2 = Timeline.Index(2)
             >>> i3 = Timeline.Index(3)
             >>> i4 = Timeline.Index(4)
+            >>> i3_4 = Timeline.Index((3, 4))
             >>> i3_5 = Timeline.Index((3, 5))
             >>> i2 < i3
             True
@@ -98,6 +99,8 @@ class Timeline(OrderedDict):
             >>> i3_5 > i3
             True
             >>> i4 > i3_5
+            True
+            >>> i3_4 < i3_5
             True
             """
             if not self._is_valid_operand(other):
