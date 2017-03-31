@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
-from collections import Sequence
+from itertools import tee
 import numpy as np
-from typing import Any, Iterable, Callable, NewType, Sequence, Union
+from typing import (
+    Any,
+    Container,
+    Iterable,
+    Callable,
+    NewType,
+    Optional,
+    Sequence,
+    Union,
+)
 
 from playground.utils.timeline import Timeline
 
@@ -20,9 +29,64 @@ def transpose(items: Iterable) -> list:
     return list(zip(*items))
 
 
-def _choose_ephemeral(datapoints, t):
+def pairwise(iterable):
     """
-    Chooses right ephemeral from ephemeral datapoints according to t value.
+    Returns iterator that iterates over pairs of adjacent elements of given
+    iterable.
+
+    >>> list(pairwise([1, 2, 3, 4]))
+    [(1, 2), (2, 3), (3, 4)]
+    """
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def extended_to_sequence_of_inputs(f):
+    """
+    Extends given function to return generator of return values iff it is
+    given an iterable of inputs.
+    """
+    def wrapper(t):
+        if isinstance(t, Iterable):
+            return (f(v) for v in t)
+        return f(t)
+
+    return wrapper
+
+
+def _disconnect_timespans(datapoints: Iterable) -> Iterable:
+    """
+    Generator that returns non-overlaping ephemeral datapoints by seperation
+    of its TimelineIndexes.
+    >>> data = {
+    ...     (1, 5): 1,
+    ...     (2, 4): 2,
+    ...     (2, 3): 3,
+    ...     (6, 6): 4,
+    ... }
+    >>> list(_disconnect_timespans(data.items()))
+    [(1, 1), ((2, 3), 3), (4, 2), (6, 6)]
+    """
+    for current_dp, next_dp in pairwise(datapoints):
+        timepoint, value = current_dp
+        start, end = timepoint[0], timepoint[1] \
+            if isinstance(timepoint, Iterable) else (timepoint, timepoint)
+        next_start = next_dp[0][0] if isinstance(next_dp[0], Iterable) else next_dp[0]
+        if start < next_start:
+            yield ((start, min(next_start - 1, end)), value)
+
+
+def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Container]:
+    """
+    Builds a dict that defines all ephemeral values, based on an iterable of
+    ephemeral datapoints.
+
+    NB: asserts that datapoints are sorted
+
+    TODO: thus function accepts t only of int type for now; if you want
+    generalization of input types, rewrite it retaining Container interface
+    of return value.
 
     >>> data = {
     ...     (1, 5): 1,
@@ -30,14 +94,11 @@ def _choose_ephemeral(datapoints, t):
     ...     (2, 3): 3,
     ...     (6, 6): 4,
     ... }
-    >>> datapoints = [(Timeline.Index(i), v) for i, v in data.items()]
-    >>> datapoints.sort()
-    >>> _choose_ephemeral(datapoints, 0) is None
-    True
-    >>> _choose_ephemeral(datapoints, 1)
-    1
+    >>> _build_ephemeral_dict(data.items())
+    {1: 1, 2: 3, 3: 3, 4: 2, 5: 1, 6: 6}
     """
-    return None
+    # for current_dp, next_dp in pairwise(datapoints):
+    starts, ends = transpose(dp if isinstance(dp, Iterable) else (dp, None) for dp in datapoints)
 
 
 def _build_ephemeral_aspect(datapoints: Iterable, interpolation: Function):
@@ -45,19 +106,22 @@ def _build_ephemeral_aspect(datapoints: Iterable, interpolation: Function):
     Wraps `interpolation` with a function that overrides interpolation when
     ephemeral values are specified.
 
-    >>> def interpolation(t):
-    ...     if isinstance(t, Sequence):
-    ...         return [interpolation(v) for v in t]
+    >>> @extended_to_sequence_of_inputs
+    ... def interpolation(t):
     ...     return t + 0.5
 
     """
-    def ephemeral_wrapper(t):
-        ephemeral = _choose_ephemeral(datapoints, t)
-        if ephemeral is not None:
-            # ephemeral case, return its value
-            return ephemeral
-        # regular case, no ephemeral for this value, compute interpolation
-        return interpolation(t)
+    ephemeral = _build_ephemeral_dict(datapoints)
+    if ephemeral:
+
+        def ephemeral_wrapper(t):
+            if t in ephemeral:
+                # ephemeral case, return its value
+                return ephemeral[t]
+            # regular case, no ephemeral for this value, compute interpolation
+            return interpolation(t)
+    else:
+        ephemeral_wrapper = interpolation
 
     return ephemeral_wrapper
 
@@ -67,22 +131,20 @@ def _build_cast_aspect(cast: Function, interpolation: Function):
     Wraps `interpolation` function with `cast` function. Respects
     the value vs. array of values duality.
 
-    >>> def interpolation(t):
-    ...     if isinstance(t, Sequence):
-    ...         return [interpolation(v) for v in t]
+    >>> @extended_to_sequence_of_inputs
+    ... def interpolation(t):
     ...     return t + 0.5
     >>> casted = _build_cast_aspect(int, interpolation)
     >>> casted(0)
     0
     >>> casted(42)
     42
-    >>> casted((0, 42))
+    >>> list(casted((0, 42)))
     [0, 42]
     """
+    @extended_to_sequence_of_inputs
     def casting_wrapper(t: Argument):
         result = interpolation(t)
-        if isinstance(result, Sequence):
-            return list(cast(value) for value in result)
         return cast(result)
 
     return casting_wrapper

@@ -18,10 +18,11 @@ from functools import total_ordering
 from operator import attrgetter
 from pprint import pformat
 from ruamel import yaml
-from typing import Any, Dict, Generator, Iterable, List, Tuple, Union
+from typing import Any, Dict, Generator, Tuple, Union
 
 Timepoint = Union['numbers.Number', 'datetime.date']
-Timespan = Union[Timepoint, Iterable[Timepoint]]
+Timespan = Union[Timepoint, Tuple[Timepoint]]
+PropertyGenerator = Generator[Tuple['TimelineIndex', Any], None, None]
 
 
 class Timeline(list):
@@ -71,11 +72,10 @@ class Timeline(list):
             1500: {'foo': 'bar'},
             (1600, 1700): {'foo': 'baz'},
         )
-
         """
         items = sorted(
-            (TimelineEvent(t, v) for (t, v) in description.items()),
-            key=attrgetter('_start')
+            (TimelineEvent(*event) for event in description.items()),
+            key=attrgetter('timespan')
         )
         return cls(items)
 
@@ -84,13 +84,12 @@ class Timeline(list):
         content_repr = "\n".join("    {},".format(line) for line in content)
         return "Timeline(\n{}\n)".format(content_repr)
 
-    def property(self, name: str, ephemeral: bool=None) \
-            -> Generator[Tuple[Any, Dict], None, None]:
+    def property(self, name: str, ephemeral: bool=None) -> PropertyGenerator:
         """
         Generator that iterates over property of given name.
 
-        :param ephemeral: switches between only regular or only ephemeral events
-        returned or both iff not specified (None).
+        :param ephemeral: switches between only regular or only ephemeral
+            events returned or both iff not specified (None).
 
         >>> tl = Timeline.read(__doc__)
         >>> list(tl.property('wraith_conversion_factor'))
@@ -105,7 +104,7 @@ class Timeline(list):
                     (ephemeral is None or event.is_ephemeral() == ephemeral):
                 yield (event.timespan, event.properties[name])
 
-    def property_lists(self, name: str) -> Tuple[List, List]:
+    def property_lists(self, name: str) -> Tuple[list, list]:
         """
         Returns two lists for a property of given name. The first one
         contains all regular events, the second - all ephemeral events.
@@ -138,38 +137,13 @@ class TimelineEvent:
         >>> TimelineEvent((42, 45)).timespan
         (42, 45)
         """
-        try:
-            length = len(timespan)
-        except TypeError:  # i.e. len(42)
-            self._start = timespan
-            self._end = None
-        else:
-            if length == 2:
-                self._start, self._end = timespan
-            else:
-                raise NotImplementedError(
-                    "Bad number of values for a key to Timeline: {}".
-                        format(value)
-                )
+        self.timespan = TimelineIndex(timespan)
         self.properties = properties or {}
 
-    @property
-    def timespan(self):
-        return self._start if self._end is None else (self._start, self._end)
-
     def __repr__(self):
-        if self._end is None:
-            k = repr(self._start)
-        else:
-            k = repr((self._start, self._end))
-        return "{k}: {v}".format(k=k, v=pformat(self.properties))
+        return "{k}: {v}".format(k=self.timespan, v=pformat(self.properties))
 
-    def __hash__(self):
-        if self._end is None:
-            return hash(self._start)
-        return hash((self._start, self._end))
-
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         """
         >>> i1 = TimelineEvent(2)
         >>> i2 = TimelineEvent(2)
@@ -178,10 +152,9 @@ class TimelineEvent:
         """
         if not self._is_valid_operand(other):
             return NotImplemented
-        other_end = getattr(other, '_end', None)
-        return self._start == other._start and self._end == other_end
+        return self.timespan == other.timespan
 
-    def __lt__(self, other):
+    def __lt__(self, other: Any) -> bool:
         """
         >>> i2 = TimelineEvent(2)
         >>> i3 = TimelineEvent(3)
@@ -201,16 +174,10 @@ class TimelineEvent:
         """
         if not self._is_valid_operand(other):
             return NotImplemented
-        if self._start == other._start:
-            other_end = getattr(other, '_end', None)
-            return (
-                self._end is None or
-                (other_end is not None and self._end < other_end)
-            )
-        return self._start < other._start
+        return self.timespan < other.timespan
 
     def _is_valid_operand(self, other):
-        return hasattr(other, '_start')
+        return hasattr(other, 'timespan')
 
     def is_ephemeral(self):
         """
@@ -226,20 +193,99 @@ class TimelineEvent:
         >>> TimelineEvent((42, 45), {'ephemeral': False}).is_ephemeral()
         True
         """
-        return self.properties.get('ephemeral') or self._end is not None
+        return self.properties.get('ephemeral') or \
+               self.timespan.end is not None
 
-    def is_containing(self, timepoint: Timepoint):
+
+@total_ordering
+class TimelineIndex:
+
+    def __init__(self, timespan: Timespan):
         """
-        Iff event's timespan covers the given timepoint.
+        >>> TimelineIndex(42)
+        42
+        >>> TimelineIndex((42, 45))
+        (42, 45)
+        """
+        try:
+            length = len(timespan)
+        except TypeError:  # i.e. len(42)
+            self.start = timespan
+            self.end = None
+        else:
+            if length == 2:
+                self.start, self.end = timespan
+            else:
+                raise NotImplementedError(
+                    "Bad number of values for a key to Timeline: {}".
+                        format(value)
+                )
 
-        >>> TimelineEvent(42).is_containing(42)
+    def __repr__(self):
+        if self.end is None:
+            return repr(self.start)
+        return repr((self.start, self.end))
+
+    def __hash__(self):
+        if self.end is None:
+            return hash(self.start)
+        return hash((self.start, self.end))
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        >>> i1 = TimelineIndex(2)
+        >>> i2 = TimelineIndex(2)
+        >>> i1 == i2
         True
-        >>> TimelineEvent(42).is_containing(45)
+        """
+        if not self._is_valid_operand(other):
+            return NotImplemented
+        other_end = getattr(other, 'end', None)
+        return self.start == other.start and self.end == other_end
+
+    def _is_valid_operand(self, other):
+        return hasattr(other, 'start')
+
+    def __lt__(self, other: Any) -> bool:
+        """
+        >>> i2 = TimelineIndex(2)
+        >>> i3 = TimelineIndex(3)
+        >>> i4 = TimelineIndex(4)
+        >>> i3_4 = TimelineIndex((3, 4))
+        >>> i3_5 = TimelineIndex((3, 5))
+        >>> i2 < i3
+        True
+        >>> i3 < i3_5
+        True
+        >>> i3_5 > i3
+        True
+        >>> i4 > i3_5
+        True
+        >>> i3_4 < i3_5
+        True
+        """
+        if not self._is_valid_operand(other):
+            return NotImplemented
+        if self.start == other.start:
+            other_end = getattr(other, 'end', None)
+            return (
+                self.end is None or
+                (other_end is not None and self.end < other_end)
+            )
+        return self.start < other.start
+
+    def is_containing(self, timepoint: Timepoint) -> bool:
+        """
+        Iff index' timespan covers the given timepoint.
+
+        >>> TimelineIndex(42).is_containing(42)
+        True
+        >>> TimelineIndex(42).is_containing(45)
         False
-        >>> TimelineEvent((42, 45)).is_containing(42)
+        >>> TimelineIndex((42, 45)).is_containing(42)
         True
-        >>> TimelineEvent((42, 45)).is_containing(45)
+        >>> TimelineIndex((42, 45)).is_containing(45)
         True
         """
-        return self._start == timepoint if self._end is None \
-            else self._start <= timepoint <= self._end
+        return self.start == timepoint if self.end is None \
+            else self.start <= timepoint <= self.end
