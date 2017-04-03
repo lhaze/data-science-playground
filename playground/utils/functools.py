@@ -12,7 +12,8 @@ from typing import (
     Union,
 )
 
-from playground.utils.timeline import Timeline
+from playground.utils.timeline import Timeline, TimelineIndex
+
 
 Value = NewType('Value', Any)
 Argument = NewType('Argument', Any)
@@ -59,22 +60,19 @@ def _disconnect_timespans(datapoints: Iterable) -> Iterable:
     """
     Generator that returns non-overlaping ephemeral datapoints by seperation
     of its TimelineIndexes.
-    >>> data = {
-    ...     (1, 5): 1,
-    ...     (2, 4): 2,
-    ...     (2, 3): 3,
-    ...     (6, 6): 4,
-    ... }
-    >>> list(_disconnect_timespans(data.items()))
+    >>> datapoints = [
+    ...     (TimelineIndex((1, 5)), 1),
+    ...     (TimelineIndex((2, 4)), 2),
+    ...     (TimelineIndex((2, 3)), 3),
+    ...     (TimelineIndex((6, 6)), 4),
+    ... ]
+    >>> list(_disconnect_timespans(datapoints))
     [(1, 1), ((2, 3), 3), (4, 2), (6, 6)]
     """
     for current_dp, next_dp in pairwise(datapoints):
-        timepoint, value = current_dp
-        start, end = timepoint[0], timepoint[1] \
-            if isinstance(timepoint, Iterable) else (timepoint, timepoint)
-        next_start = next_dp[0][0] if isinstance(next_dp[0], Iterable) else next_dp[0]
-        if start < next_start:
-            yield ((start, min(next_start - 1, end)), value)
+        current_index, value = current_dp
+        new_indexes = current_index - next_dp[0]
+        yield from ((new_index, value) for new_index in new_indexes)
 
 
 def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Container]:
@@ -88,13 +86,13 @@ def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Container]:
     generalization of input types, rewrite it retaining Container interface
     of return value.
 
-    >>> data = {
-    ...     (1, 5): 1,
-    ...     (2, 4): 2,
-    ...     (2, 3): 3,
-    ...     (6, 6): 4,
-    ... }
-    >>> _build_ephemeral_dict(data.items())
+    >>> datapoints = [
+    ...     (TimelineIndex((1, 5)), 1),
+    ...     (TimelineIndex((2, 4)), 2),
+    ...     (TimelineIndex((2, 3)), 3),
+    ...     (TimelineIndex((6, 6)), 4),
+    ... ]
+    >>> _build_ephemeral_dict(datapoints)
     {1: 1, 2: 3, 3: 3, 4: 2, 5: 1, 6: 6}
     """
     # for current_dp, next_dp in pairwise(datapoints):

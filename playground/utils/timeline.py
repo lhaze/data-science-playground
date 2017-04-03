@@ -18,7 +18,7 @@ from functools import total_ordering
 from operator import attrgetter
 from pprint import pformat
 from ruamel import yaml
-from typing import Any, Dict, Generator, Tuple, Union
+from typing import Any, Dict, Generator, List, Tuple, Union
 
 Timepoint = Union['numbers.Number', 'datetime.date']
 Timespan = Union[Timepoint, Tuple[Timepoint]]
@@ -208,18 +208,15 @@ class TimelineIndex:
         (42, 45)
         """
         try:
-            length = len(timespan)
-        except TypeError:  # i.e. len(42)
-            self.start = timespan
-            self.end = None
+            start, end = timespan
+        except (ValueError, TypeError):  # i.e. 42 or None
+            start = timespan
+            end = None
         else:
-            if length == 2:
-                self.start, self.end = timespan
-            else:
-                raise NotImplementedError(
-                    "Bad number of values for a key to Timeline: {}".
-                        format(value)
-                )
+            if start == end:
+                end = None
+        assert end is None or start < end
+        self.start, self.end = start, end
 
     def __repr__(self):
         if self.end is None:
@@ -230,6 +227,9 @@ class TimelineIndex:
         if self.end is None:
             return hash(self.start)
         return hash((self.start, self.end))
+
+    def _is_valid_operand(self, other):
+        return hasattr(other, 'start') and hasattr(other, 'end')
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -242,9 +242,6 @@ class TimelineIndex:
             return NotImplemented
         other_end = getattr(other, 'end', None)
         return self.start == other.start and self.end == other_end
-
-    def _is_valid_operand(self, other):
-        return hasattr(other, 'start')
 
     def __lt__(self, other: Any) -> bool:
         """
@@ -273,6 +270,35 @@ class TimelineIndex:
                 (other_end is not None and self.end < other_end)
             )
         return self.start < other.start
+
+    def __sub__(self, other: Any) -> List['TimelineIndex']:
+        """
+        >>> TimelineIndex((1, 4)) - TimelineIndex((1, 5))
+        []
+        >>> TimelineIndex((1, 4)) - TimelineIndex((3, 5))
+        [(1, 2)]
+        >>> TimelineIndex((1, 4)) - TimelineIndex((1, 3))
+        [4]
+        >>> TimelineIndex((1, 4)) - TimelineIndex(2)
+        [1, (3, 4)]
+        """
+        if not self._is_valid_operand(other):
+            return NotImplemented
+        if other.end < self.start or other.start > self.start:
+            # non-overlapping case; move along, nothing to modify here
+            return [self]
+        result = []
+        if self.start < other.start:
+            # case 'before'
+            result.append(self.__class__((self.start, other.start - 1)))
+        other_end = other.end or other.start
+        self_end = self.end or self.start
+        if other_end < self_end:
+            # case 'after'
+            result.append(self.__class__((other_end + 1, self_end)))
+        # iff none of the above: the case where nothing remains
+        # 'other' completely covers 'self'
+        return result
 
     def is_containing(self, timepoint: Timepoint) -> bool:
         """
