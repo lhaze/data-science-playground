@@ -3,9 +3,9 @@ from itertools import tee
 import numpy as np
 from typing import (
     Any,
-    Container,
     Iterable,
     Callable,
+    Mapping,
     NewType,
     Optional,
     Sequence,
@@ -75,7 +75,7 @@ def _disconnect_timespans(datapoints: Iterable) -> Iterable:
         yield from ((new_index, value) for new_index in new_indexes)
 
 
-def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Container]:
+def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Mapping]:
     """
     Builds a dict that defines all ephemeral values, based on an iterable of
     ephemeral datapoints.
@@ -83,7 +83,7 @@ def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Container]:
     NB: asserts that datapoints are sorted
 
     TODO: thus function accepts t only of int type for now; if you want
-    generalization of input types, rewrite it retaining Container interface
+    generalization of input types, rewrite it retaining Mapping interface
     of return value.
 
     >>> datapoints = [
@@ -97,6 +97,7 @@ def _build_ephemeral_dict(datapoints: Iterable) -> Optional[Container]:
     """
     # for current_dp, next_dp in pairwise(datapoints):
     starts, ends = transpose(dp if isinstance(dp, Iterable) else (dp, None) for dp in datapoints)
+    return {}
 
 
 def _build_ephemeral_aspect(datapoints: Iterable, interpolation: Function):

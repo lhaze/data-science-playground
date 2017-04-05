@@ -43,6 +43,7 @@ class Timeline(list):
         Creates a Timeline from a YAML file defined by given filename.
         """
         with open(filename) as file:
+            # noinspection PyTypeChecker
             description = yaml.load(file)
         return cls.create(description)
 
@@ -59,6 +60,7 @@ class Timeline(list):
             1800: {'mortality': 0.006, 'wraith_conversion_factor': 0.5},
         )
         """
+        # noinspection PyTypeChecker
         description = yaml.load(string, Loader=yaml.Loader)
         return cls.create(description)
 
@@ -88,6 +90,7 @@ class Timeline(list):
         """
         Generator that iterates over property of given name.
 
+        :param name: name of the property
         :param ephemeral: switches between only regular or only ephemeral
             events returned or both iff not specified (None).
 
@@ -176,7 +179,8 @@ class TimelineEvent:
             return NotImplemented
         return self.timespan < other.timespan
 
-    def _is_valid_operand(self, other):
+    @staticmethod
+    def _is_valid_operand(other):
         return hasattr(other, 'timespan')
 
     def is_ephemeral(self):
@@ -194,7 +198,7 @@ class TimelineEvent:
         True
         """
         return self.properties.get('ephemeral') or \
-               self.timespan.end is not None
+            self.timespan.end is not None
 
 
 @total_ordering
@@ -228,7 +232,8 @@ class TimelineIndex:
             return hash(self.start)
         return hash((self.start, self.end))
 
-    def _is_valid_operand(self, other):
+    @staticmethod
+    def _is_valid_operand(other):
         return hasattr(other, 'start') and hasattr(other, 'end')
 
     def __eq__(self, other: Any) -> bool:
