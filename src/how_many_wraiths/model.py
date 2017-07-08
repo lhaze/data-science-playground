@@ -5,10 +5,10 @@ from pprint import pprint
 import numpy as np
 import yaml
 
-from playground.utils.timeline import Timeline
+from src.utils.timeline import Timeline
 
 
-tl = Timeline.load('how.yml')
+tl = Timeline.load('how_many_wraiths.yml')
 
 alive_population_table = sorted(data['alive_population'].items(), key=itemgetter(0))
 alive_population_datapoints = list(zip(*alive_population_table))
