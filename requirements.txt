@@ -8,3 +8,8 @@ simpy==3.0.10
 # substitute of PyYaml 'cause it fixes "sequence as a key of a mapping" problem
 ruamel.yaml==0.13.14
 ipython==4.2.1
+
+# JATS requirements
+ruffus==2.6.3
+lxml==3.4.4
+requests==2.8.0
