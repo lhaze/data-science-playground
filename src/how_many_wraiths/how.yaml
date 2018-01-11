@@ -5,7 +5,7 @@
 1500:
     alive: 6500
     mortality_rate: 0.04
-[1500, 1869]:
+[1500, 1569]:
     mortality_rate: 0.1
 1550:
     alive: 9000
@@ -21,20 +21,29 @@
     alive: 120000
 1800:
     alive: 63400
+    mortality_rate: 0.04
 1810:
     alive: 78000  # based on [2]
 1830:
     alive: 139700
 1850:
     alive: 163600
+[1852, 1855]:
+    additional_deaths: 940  # cholera epidemic; annual
 1864:
     alive: 223000
 1870:
     mortality_rate: 0.033
-[1870, 1909]:
-    mortality_rate: 0.08
+[1866, 1867]:
+    additional_deaths: 500  # cholera epidemic; annual
+[1873, 1873]:
+    additional_deaths: 200  # cholera epidemic
 1882:
     alive: 383000
+1890:
+    mortality_rate: 0.028
+[1892, 1892]:
+    additional_deaths: 69  # cholera epidemic
 1897:
     alive: 683692
 1899:
