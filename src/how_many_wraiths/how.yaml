@@ -13,10 +13,28 @@
     alive: 10000
 1595:
     alive: 20000
+[1605, 1630]:
+    # The Third Maelstrom, end date is speculative
+    # rates are quite arbitrary
+    enfant_oblivion_rate: 0.6
+    senior_oblivion_rate: 0.2
 1624:
     alive: 48000
+[1624, 1626]:
+    # bubonic plague
+    additional_deaths: 1000  # annual, estimated
+[1627, 1628]:
+    # starvation after plague
+    additional_deaths: 500  # annual, estimated
 1700:
     alive: 39000
+[1707, 1711]:
+    # Great Northern War & bubonic plague
+    additional_deaths: 7500  # annual, estimated
+[1708, 1720]:
+    # war & plague cause local Maelstrom
+    enfant_oblivion_rate: 0.4
+    senior_oblivion_rate: 0.1
 1792:
     alive: 120000
 1800:
@@ -29,21 +47,25 @@
 1850:
     alive: 163600
 [1852, 1855]:
-    additional_deaths: 940  # cholera epidemic; annual
+    # cholera epidemic
+    additional_deaths: 940  # annual
 1864:
     alive: 223000
 1870:
     mortality_rate: 0.033
 [1866, 1867]:
-    additional_deaths: 500  # cholera epidemic; annual
+    # cholera epidemic
+    additional_deaths: 500  # annual
 [1873, 1873]:
-    additional_deaths: 200  # cholera epidemic
+    # cholera epidemic
+    additional_deaths: 200
 1882:
     alive: 383000
 1890:
     mortality_rate: 0.028
 [1892, 1892]:
-    additional_deaths: 69  # cholera epidemic
+    # cholera epidemic
+    additional_deaths: 100
 1897:
     alive: 683692
 1899:
@@ -62,7 +84,6 @@
     alive: 936713
 [1921, 1938]:
     mortality_rate: 0.03
-    ephemeral: true
 1925:
     alive: 1003000
 1931:
