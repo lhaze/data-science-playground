@@ -44,7 +44,7 @@ class Timeline(list):
         """
         with open(filename) as file:
             # noinspection PyTypeChecker
-            description = yaml.load(file)
+            description = yaml.load(file, Loader=yaml.Loader)
         return cls.create(description)
 
     @classmethod
@@ -80,6 +80,15 @@ class Timeline(list):
             key=attrgetter('timespan')
         )
         return cls(items)
+
+    @property
+    def start(self):
+        return self[0].timespan.start
+
+    @property
+    def end(self):
+        timespan = self[-1].timespan
+        return timespan.end if timespan.end is not None else timespan.start
 
     def __repr__(self) -> str:
         content = (repr(event) for event in self)
