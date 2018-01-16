@@ -1,14 +1,15 @@
 # Python artifacts
 *.py[cod]
+__pycache__
+.cache
 
 # devops artifacts
+.eggs
 *.egg-info
 devops/*.retry
 
 # project management
 .vagrant
-__pycache__
-.cache
 .coverage
 .coverage-report
 

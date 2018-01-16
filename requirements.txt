@@ -1,15 +1,18 @@
+# dev tools
 pip==9.0.1
 jupyter==1.0.0
-matplotlib==1.5.3
-pandas==0.19.1
-scipy==0.18.1
-scikit-learn==0.18.1
-simpy==3.0.10
-# substitute of PyYaml 'cause it fixes "sequence as a key of a mapping" problem
-ruamel.yaml==0.13.14
 ipython==4.2.1
+ruamel.yaml==0.15.35  # substitute of PyYaml 'cause it fixes "sequence as a key of a mapping" problem
 
-# JATS requirements
-ruffus==2.6.3
-lxml==3.4.4
-requests==2.8.0
+# sci tools
+matplotlib==2.1.1
+pandas==0.22.0
+scipy==1.0.0
+scikit-learn==0.19.1
+
+# local code
+-e ../src
+
+# subprojects
+-r how_many_wraiths/requirements.txt
+-r jats/requirements.txt
