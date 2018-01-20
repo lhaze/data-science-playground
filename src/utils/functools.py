@@ -12,7 +12,7 @@ from typing import (
     Union,
 )
 
-from src.utils.timeline import Timeline, TimelineIndex
+from utils.timeline import Timeline, TimelineIndex
 
 
 Value = NewType('Value', Any)

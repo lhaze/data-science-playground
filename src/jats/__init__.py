@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src.utils.os import ensure_dir_exists, path
+from utils.oss import ensure_dir_exists, path
 
 
 CODE_DIR = ensure_dir_exists(path(__file__, '..', '..'))

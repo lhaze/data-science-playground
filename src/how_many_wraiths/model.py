@@ -3,21 +3,18 @@ from functools import lru_cache
 from operator import itemgetter
 from pprint import pprint
 import numpy as np
-import yaml
 
-from src.utils.timeline import Timeline
+from ruamel import yaml
 
-
-tl = Timeline.load('how_many_wraiths.yml')
-
-alive_population_table = sorted(data['alive_population'].items(), key=itemgetter(0))
-alive_population_datapoints = list(zip(*alive_population_table))
-START_YEAR = 1600  # alive_population_table[0][0]
-END_YEAR = 1800  # alive_population_table[-1][0]
+from utils.timeline import Timeline
+from utils.functools import build_interpolation
 
 
-def year_range(end_year=END_YEAR):
-    return range(START_YEAR, end_year + 1)
+# timeline = Timeline.load('how_many_wraiths_timeline.yaml')
+# START_YEAR = timeline.start
+# END_YEAR = timeline.end
+# year_list = list(range(START_YEAR, END_YEAR + 1))
+
 
 
 def alive_population(t):

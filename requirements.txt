@@ -10,9 +10,10 @@ pandas==0.22.0
 scipy==1.0.0
 scikit-learn==0.19.1
 
-# local code
--e ../src
-
 # subprojects
 -r how_many_wraiths/requirements.txt
 -r jats/requirements.txt
+
+# local code
+-e ./src
+

@@ -2,8 +2,8 @@
 from functools import partial, reduce
 from lxml import etree
 
-from src.jats.transformations import Transformation
-from src.utils.xml import load_xml
+from jats.transformations import Transformation
+from utils.xml import load_xml
 
 from .. import make_task_dir, path
 

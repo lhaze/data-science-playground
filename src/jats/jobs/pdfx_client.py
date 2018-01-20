@@ -1,8 +1,8 @@
 import os
 import requests
 
-from src.jats import PdfxError
-from src.utils.os import path
+from jats import PdfxError
+from utils.oss import path
 
 from .. import make_task_dir
 
