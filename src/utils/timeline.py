@@ -54,8 +54,8 @@ class Timeline(list):
 
         >>> Timeline.read(__doc__)
         Timeline(
-            1500: {'alive_population': 5000, 'mortality': 0.015, 'wraith_conversion_factor': 0.4},
             (1500, 1550): {'name': 'XV century', 'wraith_conversion_factor': 0.2},
+            1500: {'alive_population': 5000, 'mortality': 0.015, 'wraith_conversion_factor': 0.4},
             1600: {'alive_population': 7000},
             1800: {'mortality': 0.006, 'wraith_conversion_factor': 0.5},
         )
@@ -105,7 +105,7 @@ class Timeline(list):
 
         >>> tl = Timeline.read(__doc__)
         >>> list(tl.property('wraith_conversion_factor'))
-        [(1500, 0.4), ((1500, 1550), 0.2), (1800, 0.5)]
+        [((1500, 1550), 0.2), (1500, 0.4), (1800, 0.5)]
         >>> list(tl.property('wraith_conversion_factor', ephemeral=True))
         [((1500, 1550), 0.2)]
         >>> list(tl.property('wraith_conversion_factor', ephemeral=False))
@@ -175,13 +175,13 @@ class TimelineEvent:
         >>> i3_5 = TimelineEvent((3, 5))
         >>> i2 < i3
         True
-        >>> i3 < i3_5
+        >>> i3 > i3_5
         True
-        >>> i3_5 > i3
+        >>> i3_5 < i3
         True
         >>> i4 > i3_5
         True
-        >>> i3_4 < i3_5
+        >>> i3_4 > i3_5
         True
         """
         if not self._is_valid_operand(other):
@@ -212,6 +212,8 @@ class TimelineEvent:
 
 @total_ordering
 class TimelineIndex:
+
+    __slots__ = ('start', 'end')
 
     def __init__(self, timespan: Timespan):
         """
@@ -266,13 +268,13 @@ class TimelineIndex:
         >>> i3_5 = TimelineIndex((3, 5))
         >>> i2 < i3
         True
-        >>> i3 < i3_5
+        >>> i3 > i3_5
         True
-        >>> i3_5 > i3
+        >>> i3_5 < i3
         True
         >>> i4 > i3_5
         True
-        >>> i3_4 < i3_5
+        >>> i3_4 > i3_5
         True
         """
         if not self._is_valid_operand(other):
@@ -280,8 +282,8 @@ class TimelineIndex:
         if self.start == other.start:
             other_end = getattr(other, 'end', None)
             return (
-                self.end is None or
-                (other_end is not None and self.end < other_end)
+                self.end is not None and
+                (other_end is None or self.end > other_end)
             )
         return self.start < other.start
 
@@ -298,15 +300,15 @@ class TimelineIndex:
         """
         if not self._is_valid_operand(other):
             return NotImplemented
-        if other.end < self.start or other.start > self.start:
+        self_end = self.start if self.end is None else self.end
+        other_end = other.start if other.end is None else other.end
+        if other_end < self.start or other.start > self_end:
             # non-overlapping case; move along, nothing to modify here
             return [self]
         result = []
         if self.start < other.start:
             # case 'before'
             result.append(self.__class__((self.start, other.start - 1)))
-        other_end = other.end or other.start
-        self_end = self.end or self.start
         if other_end < self_end:
             # case 'after'
             result.append(self.__class__((other_end + 1, self_end)))
@@ -324,6 +326,8 @@ class TimelineIndex:
         False
         >>> TimelineIndex((42, 45)).is_containing(42)
         True
+        >>> TimelineIndex(42).is_containing(TimelineIndex((42, 45)))
+        False
         >>> TimelineIndex((42, 45)).is_containing(45)
         True
         """
