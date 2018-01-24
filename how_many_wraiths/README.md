@@ -21,7 +21,7 @@ Both questions share the same demographic model of getting to the Shadowlands, m
 
 Some historic data for demography of Warsaw (population, mortality, etc.) might be found at [Wikipedia](https://pl.wikipedia.org/wiki/Ludno%C5%9B%C4%87_Warszawy) or academic lecture notes. Other might be estimated _a priori_ (ie. afterlife pass away factors). These data can be used to build linear interpolations and a simple model of accumulative values.
 
-Some events of major influence to the problem might be found elsewhere: war slaughters, plagues, [Maelstroms](http://whitewolf.wikia.com/wiki/Maelstrom_(WTO)). These events disrupt linearity of models in the form of spikes or plateaus. Taking it into account, I've decided to model factors using linear interpolations enriched with ephemeral values and encode it in the form of a timeline of datapoints. This concept is implemented in the [timeline module](src/utils/timeline.py). Interpolations that take ephemeral values into account are constructed in the [functools module](src/utils/functools.py)
+Some events of major influence to the problem might be found elsewhere: war slaughters, plagues, [Maelstroms](http://whitewolf.wikia.com/wiki/Maelstrom_(WTO)). These events disrupt linearity of models in the form of spikes or plateaus. Taking it into account, I've decided to model factors using linear interpolations enriched with ephemeral values and encode it in the form of a timeline of datapoints. This concept is implemented in the [timeline module](../src/utils/timeline.py). Interpolations that take ephemeral values into account are constructed in the [functools module](../src/utils/functools.py)
 
 ### Tools
 
@@ -29,4 +29,4 @@ Let's try to do some math in Python.
 * [pandas](https://pypi.python.org/pypi/pandas/) to do some data manipulation
 * [matplotlib](https://pypi.python.org/pypi/matplotlib) to do some charts
 * [ruamel.yaml](https://pypi.python.org/pypi/ruamel.yaml/) for data serialization ([PyYaml](https://pypi.python.org/pypi/PyYAML) won't do, because of "[sequence as a key of mapping](https://stackoverflow.com/questions/13538015/sequence-as-key-of-yaml-mapping-in-python)" problem)
-* [some own code](src/utils) written to build a model
+* [some own code](../src/utils) to build a model
