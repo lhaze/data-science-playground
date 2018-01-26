@@ -10,10 +10,10 @@ Let's take a look at one Necropolis (that's an analogue to a city in afterlife) 
 Actually, there are two questions:
 
 ##### [Part1: date of death](how_many_wraiths_p1.ipynb)
-**DoD)** What is the _date of death_ of how many wraiths? DoD defines culture context of a character and certain aspects of his/her social position. The question is the subject of [part 1](how_many_wraiths_p1.ipynb).
+What is the _date of death_ (_DoD_) of how many wraiths? DoD defines culture context of a character and certain aspects of his/her social position. The question is the subject of [part 1](how_many_wraiths_p1.ipynb).
 
 ##### [Part2: age of death](how_many_wraiths_p2.ipynb)
-What is the _age of death_ of how many wraiths across the population of Necropolis? AoD alters demeanor & nature of wraiths' psyche & shadow. This will be the subject of [part 2](how_many_wraiths_p2.ipynb).
+What is the _age of death_ (_AoD_) of how many wraiths across the population of Necropolis? AoD alters demeanor & nature of wraiths' psyche & shadow. This will be the subject of [part 2](how_many_wraiths_p2.ipynb).
 
 Both questions share the same demographic model of getting to the Shadowlands, migrations & depopulation (Ascension/Oblivion/decorpsing) and differs only in entry data. In this part of the article, let's take DoD on the workshop and try to develop a prototypical model of it.
 
