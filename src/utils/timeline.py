@@ -14,15 +14,29 @@
     mortality: 0.006
     wraith_conversion_factor: 0.5
 """
+from datetime import date
 from functools import total_ordering
+from numbers import Number
 from operator import attrgetter
 from pprint import pformat
 from ruamel import yaml
-from typing import Any, Dict, Generator, List, Tuple, Union
+from typing import (
+    Any,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Tuple,
+    Union,
+)
 
-Timepoint = Union['numbers.Number', 'datetime.date']
-Timespan = Union[Timepoint, Tuple[Timepoint]]
-PropertyGenerator = Generator[Tuple['TimelineIndex', Any], None, None]
+from utils.functools import Value
+
+Timepoint = Union[Number, date]
+Timespan = Union[Timepoint, Tuple[Timepoint, Timepoint]]
+Datapoint = Tuple['TimelineIndex', Value]
+Datapoints = Iterable[Datapoint]
+PropertyGenerator = Generator[Datapoint, None, None]
 
 
 class Timeline(list):
@@ -82,11 +96,11 @@ class Timeline(list):
         return cls(items)
 
     @property
-    def start(self):
+    def start(self) -> Timepoint:
         return self[0].timespan.start
 
     @property
-    def end(self):
+    def end(self) -> Timepoint:
         timespan = self[-1].timespan
         return timespan.end if timespan.end is not None else timespan.start
 
@@ -116,7 +130,7 @@ class Timeline(list):
                     (ephemeral is None or event.is_ephemeral() == ephemeral):
                 yield (event.timespan, event.properties[name])
 
-    def property_lists(self, name: str) -> Tuple[list, list]:
+    def property_lists(self, name: str) -> Tuple[Datapoints, Datapoints]:
         """
         Returns two lists for a property of given name. The first one
         contains all regular events, the second - all ephemeral events.
@@ -137,10 +151,12 @@ class Timeline(list):
 @total_ordering
 class TimelineEvent:
     """
-    An object representation of timepoint of an event. It might be a single
-    timepoint (int, float, date) or a pair of timepoints. The latter case
-    describes an event extending over a period between the timepoints.
+    Represents an event in a timeline. It is described with timespan and some properties.
+    The timespan might be a single timepoint (int, float, date) or a pair of timepoints
+    (the start and the end of the event). The latter case describes an event extending over
+    a period between the timepoints.
     """
+    __slots__ = ("timespan", "properties")
 
     def __init__(self, timespan: Timespan, properties: Dict=None):
         """
@@ -212,7 +228,10 @@ class TimelineEvent:
 
 @total_ordering
 class TimelineIndex:
-
+    """
+    Represents an index of the timeline. It might be a single timepoint (int, float, date)
+    or a pair of timepoints (the start and the end of the event).
+    """
     __slots__ = ('start', 'end')
 
     def __init__(self, timespan: Timespan):
@@ -326,8 +345,6 @@ class TimelineIndex:
         False
         >>> TimelineIndex((42, 45)).is_containing(42)
         True
-        >>> TimelineIndex(42).is_containing(TimelineIndex((42, 45)))
-        False
         >>> TimelineIndex((42, 45)).is_containing(45)
         True
         """
