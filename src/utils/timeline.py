@@ -14,7 +14,7 @@
     mortality: 0.006
     wraith_conversion_factor: 0.5
 """
-from datetime import date
+from datetime import date, timedelta
 from functools import total_ordering
 from numbers import Number
 from operator import attrgetter
@@ -24,8 +24,8 @@ from typing import (
     Any,
     Dict,
     Generator,
-    Iterable,
     List,
+    Sequence,
     Tuple,
     Union,
 )
@@ -33,9 +33,10 @@ from typing import (
 from utils.functools import Value
 
 Timepoint = Union[Number, date]
+Step = Union[Number, timedelta]
 Timespan = Union[Timepoint, Tuple[Timepoint, Timepoint]]
 Datapoint = Tuple['TimelineIndex', Value]
-Datapoints = Iterable[Datapoint]
+Datapoints = Sequence[Datapoint]
 PropertyGenerator = Generator[Datapoint, None, None]
 
 
@@ -50,6 +51,7 @@ class Timeline(list):
     should not be taken as a datapoint while doing regular interpolation of
     property values.
     """
+    step = 1
 
     @classmethod
     def load(cls, filename: str) -> 'Timeline':
