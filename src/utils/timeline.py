@@ -42,11 +42,11 @@ PropertyGenerator = Generator[Datapoint, None, None]
 
 class Timeline(list):
     """
-    An abstraction over a sequence of events with properities. The event might
+    An abstraction over a sequence of events with properties. The event might
     be described as being at a timepoint or extend between two timepoints.
 
     An event might be treated as an 'ephemeral' which
-    means that it will be interpreted as a ephemeral change of property.
+    means that it will be interpreted as a non-continuous, ad-hoc change of property.
     This might be useful to describe changes that happens temporally and
     should not be taken as a datapoint while doing regular interpolation of
     property values.
@@ -107,6 +107,8 @@ class Timeline(list):
         return timespan.end if timespan.end is not None else timespan.start
 
     def __repr__(self) -> str:
+        if not self:
+            return "Timeline()"
         content = (repr(event) for event in self)
         content_repr = "\n".join("    {},".format(line) for line in content)
         return "Timeline(\n{}\n)".format(content_repr)
@@ -147,6 +149,7 @@ class Timeline(list):
             if name in event.properties:
                 l = ephemeral if event.is_ephemeral() else regular
                 l.append((event.timespan, event.properties[name]))
+        assert regular, "Property name not found in the timeline"
         return regular, ephemeral
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from itertools import tee
-from typing import Iterable, Tuple
+from typing import Iterable, Mapping, Sequence, Tuple
 
 
 def transpose(items: Iterable) -> list:
@@ -32,8 +32,39 @@ def xrange(start, stop, step):
     and date & datetime objects.
 
     NB: stop point is included!
+    >>> from datetime import date, timedelta
+    >>> start = date(2017, 2, 1)
+    >>> stop = date(2017, 2, 3)
+    >>> step = timedelta(days=1)
+    >>> list(xrange(start, stop, step))
+    [datetime.date(2017, 2, 1), datetime.date(2017, 2, 2), datetime.date(2017, 2, 3)]
+    >>> list(xrange(2.3, 7.5, 2.1))
+    [2.3, 4.4, 6.5]
     """
     i = start
     while i <= stop:
         yield i
         i += step
+
+
+generator_type = type(0 for i in ())
+
+
+def is_sequence(obj):
+    """
+    Checks whether `obj` is the real sequence, generator, tuple or list, etc and not
+    a sequence-like object like dictionary or a string.
+
+    >>> is_sequence([])
+    True
+    >>> is_sequence(())
+    True
+    >>> is_sequence(u'string')
+    False
+    >>> is_sequence(b'bytes')
+    False
+    >>> is_sequence({})
+    False
+    """
+    return not isinstance(obj, (str, bytes, Mapping)) and \
+        isinstance(obj, (Sequence, generator_type))

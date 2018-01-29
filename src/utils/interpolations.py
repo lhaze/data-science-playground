@@ -78,6 +78,7 @@ def _build_regular_interpolation(datapoints: Datapoints) -> Function:
     >>> list(interpolation((1, 2, 3, 4, 5)))
     [1.0, 1.0, 2.0, 3.0, 3.0]
     """
+    assert datapoints, "No datapoints provided"
     interpolation_vectors = transpose(_expand_datapoints(datapoints))
 
     def interpolation(t):
@@ -145,7 +146,7 @@ def _build_ephemeral_dict(datapoints: Datapoints, step: Step = 1) -> dict:
     >>> _build_ephemeral_dict(datapoints)
     {1: 1, 2: 3, 3: 3, 4: 2, 5: 1, 6: 4}
     """
-    assert datapoints
+    assert datapoints, "No datapoints provided"
     ephemerals = {}
     for index, value in datapoints:
         end = index.start if index.end is None else index.end
@@ -170,9 +171,8 @@ def _build_cast_aspect(cast: Function, interpolation: Function):
     [0, 42]
     """
     @wraps(interpolation)
-    @extended_to_sequence_of_inputs
     def casting_wrapper(t: Argument):
         result = interpolation(t)
-        return cast(result)
+        return extended_to_sequence_of_inputs(cast)(result)
 
     return casting_wrapper
