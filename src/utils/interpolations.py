@@ -116,7 +116,7 @@ def _build_ephemeral_aspect(datapoints: Datapoints, interpolation: Function, ste
     >>> list(interpolation((1, 2, 3, 4, 5)))
     [1, 1, 3.5, 3, 3]
     """
-    ephemerals = _build_ephemeral_dict(datapoints, step)
+    ephemerals = build_ephemeral_dict(datapoints, step)
 
     @wraps(interpolation)
     @extended_to_sequence_of_inputs
@@ -130,7 +130,7 @@ def _build_ephemeral_aspect(datapoints: Datapoints, interpolation: Function, ste
     return ephemeral_wrapper
 
 
-def _build_ephemeral_dict(datapoints: Datapoints, step: Step = 1) -> dict:
+def build_ephemeral_dict(datapoints: Datapoints, step: Step = 1) -> dict:
     """
     Builds a dict that defines all ephemeral values, based on an iterable of
     ephemeral datapoints.
@@ -143,7 +143,7 @@ def _build_ephemeral_dict(datapoints: Datapoints, step: Step = 1) -> dict:
     ...     (TimelineIndex((2, 3)), 3),
     ...     (TimelineIndex((6, 6)), 4),
     ... ]
-    >>> _build_ephemeral_dict(datapoints)
+    >>> build_ephemeral_dict(datapoints)
     {1: 1, 2: 3, 3: 3, 4: 2, 5: 1, 6: 4}
     """
     assert datapoints, "No datapoints provided"
