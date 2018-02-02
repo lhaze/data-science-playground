@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from itertools import tee
+from numpy import ndarray
 from typing import Iterable, Mapping, Sequence, Tuple
 
 
@@ -47,7 +48,7 @@ def xrange(start, stop, step):
         i += step
 
 
-generator_type = type(0 for i in ())
+generator_type = type(None for i in ())
 
 
 def is_sequence(obj):
@@ -67,4 +68,4 @@ def is_sequence(obj):
     False
     """
     return not isinstance(obj, (str, bytes, Mapping)) and \
-        isinstance(obj, (Sequence, generator_type))
+        isinstance(obj, (Sequence, generator_type, ndarray))
