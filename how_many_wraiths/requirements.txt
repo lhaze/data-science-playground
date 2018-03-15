@@ -1,0 +1,7 @@
+-r ../requirements.txt
+
+# sci tools
+matplotlib==2.1.1
+pandas==0.22.0
+scipy==1.0.0
+scikit-learn==0.19.1

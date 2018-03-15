@@ -3,18 +3,7 @@ pip==9.0.1
 jupyter==1.0.0
 ipython==4.2.1
 pdbpp==0.9.2
-ruamel.yaml==0.15.35  # substitute of PyYaml 'cause it fixes "sequence as a key of a mapping" problem
-
-# sci tools
-matplotlib==2.1.1
-pandas==0.22.0
-scipy==1.0.0
-scikit-learn==0.19.1
-
-# subprojects
--r how_many_wraiths/requirements.txt
--r jats/requirements.txt
+ruamel.yaml==0.15.35  # substitute of PyYaml because it fixes "sequence as a key of a mapping" problem
 
 # local code
 -e ./src
-

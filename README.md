@@ -19,7 +19,7 @@ Under development:
 * long term goal to introduce some [NLP](https://en.wikipedia.org/wiki/Natural-language_processing)-jutsu and rule-based domain system into the process to leverage the quality of semantic markup
 * `pdfx`, `requests`, `lxml`, `PySpark`
 
-#### [rising sun](rising_sun)
+#### [rising_sun](rising_sun)
 * process modelling in logic of a game model
 * the board game of [Rising Sun](https://boardgamegeek.com/boardgame/205896/rising-sun)
 * input: game rules, game setup, bot attunement
