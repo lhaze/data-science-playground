@@ -7,7 +7,7 @@ from rising_sun.model.base import types, Instance, IndexedList, Model
 class Region(Model):
     symbol = Instance(str, required=True)
     name = Instance(str)
-    reward = Instance(types.Mapping, default=types.frozenordereddict())
+    reward = Instance(types.Mapping, default=types.FrozenOrderedDict())
 
     def __init__(self, **kwargs):
         super(Region, self).__init__(**kwargs)
@@ -53,6 +53,11 @@ class Map(Model):
     connections = IndexedList(Connection, index=('a', 'b'), default=())
 
     def __getitem__(self, item):
+        """
+        >>> m = Map.sample()
+        >>> m['K']
+        藩(K)
+        """
         return self.regions[item]
 
     def __repr__(self):
