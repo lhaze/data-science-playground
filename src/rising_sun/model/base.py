@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import abc  # noqa
+from operator import attrgetter
 
 from frozendict import FrozenOrderedDict
 from pyDatalog import pyDatalog
@@ -9,7 +10,12 @@ class Model(pyDatalog.Mixin):
 
     def __init__(self, **kwargs):
         super(Model, self).__init__()
-        self.__dict__.update(kwargs)
+        for name, field in self.__class__.__dict__.items():
+            if isinstance(field, Column):
+                if field.required and name not in kwargs:
+                    raise ValueError('Field {} value for {} not provided.'.format(name, self))
+                value = kwargs.pop(name, field.default)
+                setattr(self, name, value)
 
 
 class types:  # noqa
@@ -20,7 +26,7 @@ class types:  # noqa
     dict = dict
     set = abc.Set
 
-    frozendict = FrozenOrderedDict
+    frozenordereddict = FrozenOrderedDict
     Sequence = abc.Sequence
     Mapping = abc.Mapping
 
@@ -59,11 +65,14 @@ class List(Column):
 
 class IndexedList(List):
     def __init__(self, *args, **kwargs):
-        self.index = kwargs.pop('index')
+        index = kwargs.pop('index')
+        if isinstance(index, str):
+            index = (index,)
+        self.index = index
         super(IndexedList, self).__init__(*args, **kwargs)
 
     def _preprocess_value(self, value):
-        return types.frozendict((getattr(v, self.index), v) for v in value)
+        return types.frozenordereddict((attrgetter(*self.index)(v), v) for v in value)
 
     def __getitem__(self, item):
         raise NotImplementedError
