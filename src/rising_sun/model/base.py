@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import abc
 from collections import abc as collections_abc
+from itertools import count
 from operator import attrgetter
 
 from frozendict import FrozenOrderedDict
@@ -11,18 +12,19 @@ class Model(pyDatalog.Mixin):
 
     @classmethod
     def __init_subclass__(cls):
-        cls._columns = types.FrozenOrderedDict(
+        cls._fields = types.FrozenOrderedDict(
             (name, field) for name, field in cls.__dict__.items()
             if isinstance(field, Field)
         )
 
     def __init__(self, **kwargs):
         super(Model, self).__init__()
-        for name, field in self._columns.items():
+        for name, field in self._fields.items():
             if field.required and name not in kwargs:
                 raise ValueError('Field {} value for {} not provided.'.format(name, self))
             value = kwargs.pop(name, field.default)
             setattr(self, name, value)
+            field.init(self)
 
 
 class types:  # noqa
@@ -43,6 +45,9 @@ class Field(metaclass=abc.ABCMeta):
         self.name = name
         self.default = default
         self.required = required
+
+    def init(self, instance):
+        """Initialize instance of the owner with this field."""
 
     def __get__(self, instance, owner):
         if instance is None:
@@ -73,6 +78,19 @@ class Instance(Field):
     def _validate_value(self, value):
         if not isinstance(value, self.type_):
             raise ValueError()
+
+
+class Id(Instance):
+
+    def __init__(self, name=None):
+        super(Id, self).__init__(int, name=name, required=True)
+
+    def __set_name__(self, owner, name):
+        super(Id, self).__set_name__(owner, name)
+        owner._id_counter = count()
+
+    def init(self, instance):
+        self.__set__(instance, self.owner._id_counter())
 
 
 class List(Field):

@@ -2,11 +2,15 @@
 from collections import namedtuple
 
 from rising_sun.model.base import types, Instance, IndexedList, Model
+from rising_sun.model.clan import Clan
 
 
-class Region(Model):
-    symbol = Instance(str, required=True)
+class Location(Model):
     name = Instance(str)
+
+
+class Region(Location):
+    symbol = Instance(str, required=True)
     reward = Instance(types.Mapping, default=types.FrozenOrderedDict())
 
     def __init__(self, **kwargs):
@@ -18,6 +22,10 @@ class Region(Model):
         藩(K)
         """
         return "藩({})".format(self.symbol)
+
+
+class ClanReserve(Location):
+    clan = Instance(Clan)
 
 
 class Connection(namedtuple('Connection', 'a, b')):
@@ -85,3 +93,8 @@ class Map(Model):
                 Connection('S', 'K',  is_sea=True),
             ),
         )
+
+
+class Board(Model):
+    map = Instance(Map, required=True)
+    clan_spaces = IndexedList(ClanReserve, index=('clan.symbol'), required=True)
