@@ -2,3 +2,4 @@
 
 pyDatalog==0.17.1
 frozendict==1.2
+sqlalchemy==1.2.5
