@@ -6,7 +6,7 @@ _first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 _all_cap_re = re.compile('([a-z0-9])([A-Z])')
 
 
-def camelcase_to_snake_case(name):
+def camel_case_to_snake_case(name):
     """
     >>> convert('CamelCase')
     'camel_case'
