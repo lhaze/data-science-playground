@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Unicode
 
-from rising_sun.model.base import Model
+from rising_sun.models.base import Model
 
 
 class Clan(Model):
-    symbol = Column(String(2), primary_key=True)
-    name = Column(String(50))
+    symbol = Column(Unicode(2), primary_key=True)
+    name = Column(Unicode(50), nullable=False)
 
     def __repr__(self):
         return f"族({self.name})"
