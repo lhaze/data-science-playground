@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, Unicode
+from sqlalchemy.orm import relationship
 
 from rising_sun.models.base import Model
 
@@ -7,6 +8,8 @@ from rising_sun.models.base import Model
 class Clan(Model):
     symbol = Column(Unicode(2), primary_key=True)
     name = Column(Unicode(50), nullable=False)
+    reserve = relationship("ClanReserve", uselist=False, back_populates="clan")
+    __tablename__ = 'clan'
 
     def __repr__(self):
         return f"族({self.name})"

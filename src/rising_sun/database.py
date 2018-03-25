@@ -11,7 +11,14 @@ def get_db_url():
 
 @lru_cache(maxsize=1)
 def get_db_engine():
-    return create_engine(get_db_url(), convert_unicode=True, echo=False)
+    return create_engine(get_db_url(), convert_unicode=True)
+    # iff at need of debugging:
+    # return create_engine(
+    #     get_db_url(),
+    #     convert_unicode=True,
+    #     echo=True,
+    #     # connect_args={'check_same_thread': False}
+    # )
 
 
 @lru_cache(maxsize=1)
@@ -31,3 +38,10 @@ def create_tables(drop=False):
     Model.metadata.create_all()
     Model.metadata.session = session
     return Model.metadata.tables
+
+
+def example():
+    from rising_sun.models import Region
+    r = Region(symbol='K', name='Kansai')
+    r.store()
+    return Region.query.all()

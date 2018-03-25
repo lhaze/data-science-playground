@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 from pyDatalog import pyDatalog
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.ext.declarative import declarative_base
 
-from utils.text import camel_case_to_snake_case
 from rising_sun.database import get_db_engine, get_session_factory
 
 
 class Base(pyDatalog.Mixin):
 
     query = get_session_factory().query_property()
-
-    @declared_attr
-    def __tablename__(cls):
-        return camel_case_to_snake_case(cls.__name__)
 
     def __init__(self, **kwargs):
         for name, value in kwargs.items():
