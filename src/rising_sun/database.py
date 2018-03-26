@@ -32,16 +32,16 @@ def get_session():
 
 def create_tables(drop=False):
     session = get_session()
-    from rising_sun.models import Model
+    from rising_sun.models import DbModel
     if drop:
-        Model.metadata.drop_all()
-    Model.metadata.create_all()
-    Model.metadata.session = session
-    return Model.metadata.tables
+        DbModel.metadata.drop_all()
+    DbModel.metadata.create_all()
+    DbModel.metadata.session = session
+    return DbModel.metadata.tables
 
 
 def example():
-    from rising_sun.models import Region
+    from rising_sun.models.board import Region
     r = Region(symbol='K', name='Kansai')
-    r.store()
+    r.save()
     return Region.query.all()
