@@ -4,10 +4,10 @@
 from sqlalchemy import Column, ForeignKey, Unicode, String, Text
 from sqlalchemy.orm import relationship
 
-from rising_sun.models.base import Model
+from rising_sun.models.base import DbModel, model_validator
 
 
-class Location(Model):
+class Location(DbModel):
     symbol = Column(Unicode(2), primary_key=True)
     type = Column(String(10))
     name = Column(Unicode(50))
@@ -24,15 +24,20 @@ class Region(Location):
         'polymorphic_identity': 'region',
     }
 
-    def __init__(self, **kwargs):
-        super(Region, self).__init__(**kwargs)
-
     def __repr__(self):
         """
         >>> Region(symbol='K', name='Kyushu')
         藩(K)
         """
         return "藩({})".format(self.symbol)
+
+    @model_validator('reward')
+    def reward_validator(self, value, field):
+        pass
+
+    @classmethod
+    def sample(cls):
+        return Region(symbol='N', name='Nagato', reward={})
 
 
 class ClanReserve(Location):

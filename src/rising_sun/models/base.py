@@ -1,29 +1,48 @@
 # -*- coding: utf-8 -*-
-from pyDatalog import pyDatalog
+from pyDatalog import pyDatalog, pyParser
 from ruamel import yaml
 from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun.database import get_db_engine, get_session_factory
 
 
+VALIDATOR_ATTR = '_model_validates'
+
+
 class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
-    pass
+    __terms__ = ()
+
+    def __getattr__(self, item):
+        """
+        Overrides pyDatalog.metaMixin `__getattr__` and narrows "everything is
+        a Term" to the list of attributes defined with `__terms__` class attribute.
+        """
+        if item in self._predicates:
+            return pyParser.Term("%s.%s" % (self.__name__, item))
+        raise AttributeError
 
 
 class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
 
+    def __init_subclass__(cls, **kwargs):
+        """
+        Gathers all model validators in `_validators` dict per (sub)class.
+        """
+        super().__init_subclass__(**kwargs)
+        cls._validators = {}
+        for name in dir(cls):
+            function = getattr(cls, name)
+            validates = getattr(function, VALIDATOR_ATTR, None)
+            if validates:
+                cls._validators[name] = (function,) + validates
+
     def __init__(self, **kwargs):
-        for name, value in kwargs.items():
-            validator_name = f'_validate_{name}'
-            if hasattr(self, validator_name):
-                getattr(self, validator_name)(value)
         self.__dict__.update(kwargs)
 
     def __getstate__(self):
         """
         Serialization ignores attributes with names starting with `_`.
 
-        >>> from ruamel import yaml
         >>> a = SimpleModel(foo='bar', _baz='not_serialized')
         >>> yaml.dump(a)
         '!!python/object:base.SimpleModel {foo: bar}\\n'
@@ -39,6 +58,13 @@ class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
                 if not k.startswith('_')
             )
         )
+
+
+def model_validator(*names):
+    def marker(f):
+        setattr(f, VALIDATOR_ATTR, names)
+        return f
+    return marker
 
 
 def save(model, commit=True):

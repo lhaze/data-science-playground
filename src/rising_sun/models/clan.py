@@ -2,10 +2,10 @@
 from sqlalchemy import Column, Unicode
 from sqlalchemy.orm import relationship
 
-from rising_sun.models.base import Model
+from rising_sun.models.base import DbModel
 
 
-class Clan(Model):
+class Clan(DbModel):
     symbol = Column(Unicode(2), primary_key=True)
     name = Column(Unicode(50), nullable=False)
     reserve = relationship("ClanReserve", uselist=False, back_populates="clan")
