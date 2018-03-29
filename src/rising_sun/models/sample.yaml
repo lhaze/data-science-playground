@@ -1,0 +1,15 @@
+!<board>
+map: !<map>
+  connections:
+  - !<connection> {a: Nagato, b: Kansai}
+  - !<connection> {a: Nagato, b: Shikoku, is_sea: true}
+  - !<connection> {a: Shikoku, b: Kansai, is_sea: true}
+  regions:
+  - !<region> {name: Nagato}
+  - !<region> {name: Shikoku}
+  - !<region> {name: Kansai}
+shrines:
+- !<shrine> {name: Shrine 1}
+- !<shrine> {name: Shrine 2}
+- !<shrine> {name: Shrine 3}
+- !<shrine> {name: Shrine 4}

@@ -2,6 +2,9 @@
 import os
 
 
+dirname = os.path.dirname
+
+
 def path(filepath, *args):
     return os.path.abspath(os.path.join(filepath, *args))
 

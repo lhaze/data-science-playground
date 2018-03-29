@@ -3,7 +3,7 @@ from pyDatalog import pyDatalog, pyParser
 from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun.database import get_db_engine, get_session_factory
-from utils.serialization import yaml
+from utils.serialization import yaml, ExtLoader
 
 
 VALIDATOR_ATTR = '_model_validates'
@@ -25,6 +25,7 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
 class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     __fields__ = ()
+    yaml_constructor = ExtLoader
 
     @property
     def class_symbol(self):
@@ -74,6 +75,9 @@ class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
         model = getattr(models, model_name, None)
         assert model, f"Model named `{model_name}` not found"
         assert isinstance(obj, model)
+
+    def dump(self):
+        return yaml.dump(self)
 
 
 def model_validator(*names):
