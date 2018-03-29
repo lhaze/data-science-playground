@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from pyDatalog import pyDatalog, pyParser
-from ruamel import yaml
 from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun.database import get_db_engine, get_session_factory
+from utils.serialization import yaml
 
 
 VALIDATOR_ATTR = '_model_validates'
@@ -17,12 +17,22 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
         Overrides pyDatalog.metaMixin `__getattr__` and narrows "everything is
         a Term" to the list of attributes defined with `__terms__` class attribute.
         """
-        if item in self._predicates:
+        if item in self.__terms__:
             return pyParser.Term("%s.%s" % (self.__name__, item))
         raise AttributeError
 
 
 class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
+
+    __fields__ = ()
+
+    @property
+    def class_symbol(self):
+        return self.__class__.__name__
+
+    @property
+    def descriptor_fields(self):
+        return sorted(name for name in self.__dict__ if not name.startswith('_'))
 
     def __init_subclass__(cls, **kwargs):
         """
@@ -51,13 +61,19 @@ class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     def __repr__(self):
         return '{0}({1})'.format(
-            self.__class__.__name__,
+            self.class_symbol,
             ", ".join(
-                "{}={}".format(k, v)
-                for k, v in sorted(self.__dict__.items())
-                if not k.startswith('_')
+                "{}={}".format(name, getattr(self, name))
+                for name in self.descriptor_fields
             )
         )
+
+    @staticmethod
+    def validate_model_type(obj, model_name):
+        from .. import models
+        model = getattr(models, model_name, None)
+        assert model, f"Model named `{model_name}` not found"
+        assert isinstance(obj, model)
 
 
 def model_validator(*names):
@@ -82,29 +98,3 @@ DbModel = declarative_base(cls=SimpleModel, metaclass=DbModelMeta)
 DbModel.metadata.bind = get_db_engine()
 DbModel.query = get_session_factory().query_property()
 DbModel.save = save
-
-
-class Region(SimpleModel):
-    """
-    >>> region = Region(symbol='K', name='Kansai', reward={})
-    >>> string = yaml.dump(region)
-    >>> string
-    '!<Region>\\nname: Kansai\\nreward: {}\\nsymbol: K\\n'
-    >>> restored_region = yaml.load(string, Loader=yaml.Loader)
-    >>> restored_region
-    Region(name=Kansai, reward={}, symbol=K)
-    """
-    yaml_tag = 'Region'
-
-    @classmethod
-    def sample(cls):
-        """
-        >>> sample = Region.sample()
-        >>> yaml.dump(sample)  # doctest: +ELLIPSIS
-        '- !<Region>\\n  name: Nagato\\n  reward: {}\\n  symbol: N\\n- ... symbol: K\\n'
-        """
-        return [
-            Region(symbol='N', name='Nagato', reward={}),
-            Region(symbol='S', name='Shikoku', reward={}),
-            Region(symbol='K', name='Kansai', reward={}),
-        ]

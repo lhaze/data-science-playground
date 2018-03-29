@@ -1,127 +1,153 @@
 # -*- coding: utf-8 -*-
-# from collections import namedtuple
+import abc
+from itertools import chain
+from enum import Enum
 
-from sqlalchemy import Column, ForeignKey, Unicode, String, Text
-from sqlalchemy.orm import relationship
-
-from rising_sun.models.base import DbModel, model_validator
+from rising_sun.models.base import SimpleModel
 
 
-class Location(DbModel):
-    symbol = Column(Unicode(2), primary_key=True)
-    type = Column(String(10))
-    name = Column(Unicode(50))
-    __tablename__ = 'location'
-    __mapper_args__ = {
-        'polymorphic_identity': 'location',
-        'polymorphic_on': type
-    }
+class LocationType(Enum):
+    REGION = 'region'
+    SHRINE = 'shrine'
+    RESERVE = 'reserve'
+
+
+class RewardType(Enum):
+    VICTORY_POINTS = 'VPs'
+    COINS = 'coins'
+    RONINS = 'ronins'
+
+
+class Location(SimpleModel):
+    name = None
+
+    @abc.abstractproperty
+    def type(self):
+        pass
+
+    def validate(self):
+        assert self.name
 
 
 class Region(Location):
-    reward = Column(Text)
-    __mapper_args__ = {
-        'polymorphic_identity': 'region',
-    }
+    yaml_tag = LocationType.REGION.value
+    class_symbol = "藩"
+    type = LocationType.REGION
+    # reward = None
 
-    def __repr__(self):
-        """
-        >>> Region(symbol='K', name='Kyushu')
-        藩(K)
-        """
-        return "藩({})".format(self.symbol)
-
-    @model_validator('reward')
-    def reward_validator(self, value, field):
-        pass
-
-    @classmethod
-    def sample(cls):
-        return Region(symbol='N', name='Nagato', reward={})
+    def validate(self):
+        super().validate()
+        # assert self.reward in RewardType
 
 
 class ClanReserve(Location):
-    clan_id = Column(Unicode, ForeignKey('clan.symbol'))
-    clan = relationship("Clan", back_populates="reserve")
-    __mapper_args__ = {
-        'polymorphic_identity': 'clan_res',
-    }
+    yaml_tag = LocationType.RESERVE.value
+    type = LocationType.RESERVE
+    clan = None
+
+    def validate(self):
+        super().validate()
+        self.validate_model_type(self.clan, 'Clan')
 
 
 class Shrine(Location):
-    # TODO: kami reference
-    __mapper_args__ = {
-        'polymorphic_identity': 'shrine',
-    }
+    yaml_tag = LocationType.SHRINE.value
+    type = LocationType.SHRINE
+    kami = None
+
+    def validate(self):
+        super().validate()
+        # self.validate_model_type(self.kami, 'Kami')
 
 
-# class Connection(namedtuple('Connection', 'a, b')):
-#
-#     def __new__(cls, *args, is_sea=False):
-#         self = super(Connection, cls).__new__(cls, *args)
-#         self.is_sea_route = is_sea
-#         return self
-#
-#     def __repr__(self):
-#         """
-#         >>> Connection(1, 2, is_sea=True)
-#         海(1,2)
-#         >>> Connection(2, 1)
-#         陸(2,1)
-#         """
-#         return "{}({},{})".format('海' if self.is_sea_route else '陸', self.a, self.b)
-#
-#     def __eq__(self, other):
-#         """
-#         >>> Connection(1, 2) == Connection(2, 1)
-#         True
-#         >>> Connection(1, 2, is_sea=True) == Connection(1, 2)
-#         True
-#         """
-#         if not isinstance(other, Connection):
-#             return False
-#         return (self.a, self.b) == (other.a, other.b) or (self.b, self.a) == (other.a, other.b)
-#
-#
-# class Map(Model):
-#     regions = IndexedList(Region, index='symbol', default=())
-#     connections = IndexedList(Connection, index=('a', 'b'), default=())
-#
-#     def __getitem__(self, item):
-#         """
-#         >>> m = Map.sample()
-#         >>> m['K']
-#         藩(K)
-#         """
-#         return self.regions[item]
-#
-#     def __repr__(self):
-#         """
-#         >>> Map.sample()
-#         Map(regions=[N,S,K], connections=[(N,K),(N,S),(S,K)])
-#
-#         """
-#         return "Map(regions=[{}], connections=[{}])".format(
-#             ",".join(r.symbol for r in self.regions.values()),
-#             ",".join("(%s,%s)" % (c.a, c.b) for c in self.connections.values()),
-#         )
-#
-#     @classmethod
-#     def sample(cls):
-#         return cls(
-#             regions=(
-#                 Region(symbol='N', name='Nagato'),
-#                 Region(symbol='S', name='Shikoku'),
-#                 Region(symbol='K', name='Kansai'),
-#             ),
-#             connections=(
-#                 Connection('N', 'K'),
-#                 Connection('N', 'S',  is_sea=True),
-#                 Connection('S', 'K',  is_sea=True),
-#             ),
-#         )
-#
-#
-# class Board(Model):
-#     map = Instance(Map, required=True)
-#     clan_spaces = IndexedList(ClanReserve, index=('clan.symbol'), required=True)
+class Connection(SimpleModel):
+
+    yaml_tag = 'connection'
+    descriptor_fields = ('a', 'b')
+    a = None
+    b = None
+    is_sea = False
+
+    @property
+    def class_symbol(self):
+        return '海' if self.is_sea else '陸'
+
+    def validate(self):
+        assert self.a
+        assert self.b
+
+    def __eq__(self, other):
+        """
+        >>> Connection(1, 2) == Connection(2, 1)
+        True
+        >>> Connection(1, 2, is_sea=True) == Connection(1, 2)
+        True
+        """
+        if not isinstance(other, Connection):
+            return False
+        return self.is_sea == other.is_sea and (
+            (self.a, self.b) == (other.a, other.b) or (self.b, self.a) == (other.a, other.b)
+        )
+
+
+class Map(SimpleModel):
+
+    yaml_tag = 'map'
+    regions = ()
+    connections = ()
+
+    def validate(self):
+        all(r.validate() for r in self.regions)
+        all(c.validate() for c in self.connections)
+        # validate all regions are connected
+        regions_of_connections = chain.from_iterable((c.a, c.b) for c in self.connections)
+        assert set(regions_of_connections) == set(r.name for r in self.regions)
+
+    def __repr__(self):
+        """
+        >>> Map.sample()
+        Map(regions=[N,S,K], connections=[(N,K),(N,S),(S,K)])
+
+        """
+        return "Map(regions=[{}], connections=[{}])".format(
+            ",".join(r.name for r in self.regions),
+            ",".join("(%s,%s)" % (c.a, c.b) for c in self.connections),
+        )
+
+    @classmethod
+    def sample(cls):
+        return cls(
+            regions=[
+                Region(name='Nagato'),
+                Region(name='Shikoku'),
+                Region(name='Kansai'),
+            ],
+            connections=[
+                Connection(a='Nagato', b='Kansai'),
+                Connection(a='Nagato', b='Shikoku',  is_sea=True),
+                Connection(a='Shikoku', b='Kansai',  is_sea=True),
+            ],
+        )
+
+
+class Board(SimpleModel):
+
+    yaml_tag = 'board'
+    map = None
+    shrines = ()
+
+    def validate(self):
+        self.map.validate()
+        all(s.validate() for s in self.shrines)
+
+    @classmethod
+    def sample(cls):
+        return cls(
+            map=Map.sample(),
+            shrines=[
+                Shrine(name='Shrine 1'),
+                Shrine(name='Shrine 2'),
+                Shrine(name='Shrine 3'),
+                Shrine(name='Shrine 4'),
+            ]
+        )
