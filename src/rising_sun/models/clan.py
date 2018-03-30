@@ -8,7 +8,7 @@ from rising_sun.models.base import DbModel
 class Clan(DbModel):
     symbol = Column(Unicode(2), primary_key=True)
     name = Column(Unicode(50), nullable=False)
-    reserve = relationship("ClanReserve", uselist=False, back_populates="clan")
+    # reserve = relationship("ClanReserve", uselist=False, back_populates="clan")
     __tablename__ = 'clan'
 
     def __repr__(self):
@@ -29,8 +29,7 @@ class Clan(DbModel):
     def test(cls):
         """
         >>> Clan.test()
-        >>> Clan.session.query(Clan).all()
+        >>> Clan.query.all()
         [族(Lotus), 族(Koi)]
         """
-        [cls.session.add(c) for c in cls.sample()]
-        cls.session.commit()
+        [c.save() for c in cls.sample()]

@@ -78,10 +78,10 @@ class Connection(SimpleModel):
 
     def __eq__(self, other):
         """
-        >>> Connection(1, 2) == Connection(2, 1)
+        >>> Connection(a=1, b=2) == Connection(a=2, b=1)
         True
-        >>> Connection(1, 2, is_sea=True) == Connection(1, 2)
-        True
+        >>> Connection(a=1, b=2, is_sea=True) == Connection(a=1, b=2)
+        False
         """
         if not isinstance(other, Connection):
             return False
@@ -106,7 +106,7 @@ class Map(SimpleModel):
     def __repr__(self):
         """
         >>> Map.sample()
-        Map(regions=[N,S,K], connections=[(N,K),(N,S),(S,K)])
+        Map(regions=[Nagato,Shikoku,Kansai], connections=[(Nagato,Kansai),(Nagato,Shikoku),(Shikoku,Kansai)])
 
         """
         return "Map(regions=[{}], connections=[{}])".format(

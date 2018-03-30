@@ -38,10 +38,3 @@ def create_tables(drop=False):
     DbModel.metadata.create_all()
     DbModel.metadata.session = session
     return DbModel.metadata.tables
-
-
-def example():
-    from rising_sun.models.board import Region
-    r = Region(symbol='K', name='Kansai')
-    r.save()
-    return Region.query.all()

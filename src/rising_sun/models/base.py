@@ -56,7 +56,7 @@ class SimpleModel(yaml.YAMLObject, metaclass=ModelMeta):
 
         >>> a = SimpleModel(foo='bar', _baz='not_serialized')
         >>> yaml.dump(a)
-        '!!python/object:base.SimpleModel {foo: bar}\\n'
+        '!!python/object:rising_sun.models.base.SimpleModel {foo: bar}\\n'
         """
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
@@ -87,18 +87,24 @@ def model_validator(*names):
     return marker
 
 
-def save(model, commit=True):
+class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
+    pass
+
+
+DbModel = declarative_base(
+    bind=get_db_engine(),
+    cls=SimpleModel,
+    metaclass=DbModelMeta,
+    name='DbModel'
+)
+
+
+def save(model: DbModel, commit: bool = True):
     session = model.metadata.session
     session.add(model)
     if commit:
         session.commit()
 
 
-class DbModelMeta(pyDatalog.sqlMetaMixin, ModelMeta):
-    pass
-
-
-DbModel = declarative_base(cls=SimpleModel, metaclass=DbModelMeta)
-DbModel.metadata.bind = get_db_engine()
 DbModel.query = get_session_factory().query_property()
 DbModel.save = save
