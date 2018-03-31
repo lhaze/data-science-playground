@@ -7,21 +7,22 @@ from frozendict import FrozenOrderedDict
 
 
 class Entity:
+    __fields__ = FrozenOrderedDict()
+
     @classmethod
     def __init_subclass__(cls):
-        cls._fields = FrozenOrderedDict(
-            (name, field) for name, field in cls.__dict__.items()
+        super().__init_subclass__()
+        cls.__fields__ = FrozenOrderedDict(
+            (name, field)
+            for super_cls in cls.mro()
+            for name, field in super_cls.__dict__.items()
             if isinstance(field, Field)
         )
 
     def __init__(self, **kwargs):
-        super(Entity, self).__init__()
-        for name, field in self._fields.items():
-            if field.required and name not in kwargs:
-                raise ValueError('Field {} value for {} not provided.'.format(name, self))
-            value = kwargs.pop(name, field.default)
-            setattr(self, name, value)
-            field.init(self)
+        super().__init__()
+        for name, field in self.__fields__.items():
+            field.init(name, self)
 
 
 class Field(metaclass=abc.ABCMeta):
