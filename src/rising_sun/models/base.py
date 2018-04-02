@@ -10,7 +10,24 @@ from utils.traits import Entity
 
 
 class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
-    __terms__ = ()
+
+    def __init__(cls, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cls.__terms__ = ()
+
+        def class_getattr(instance, name):
+            """ responds to instance.method by asking datalog engine """
+            if name not in cls.__terms__:
+                # the call is a normal getattr
+                raise AttributeError
+            # the call is trying to touch a pyDatalog term
+            predicate_name = "%s.%s[1]==" % (cls.__name__, name)
+            terms = (pyParser.Term('_pyD_class', forced_type='constant'), instance, pyParser.Term("X"))  # prefixed
+            literal = pyParser.Literal.make(predicate_name, terms)  # TODO predicate_name[:-2]
+            result = literal.lua.ask()
+            return result[0][-1] if result else None
+
+        cls.__getattr__ = class_getattr
 
     def __getattr__(self, item):
         """
@@ -82,7 +99,7 @@ class SimpleModel(BaseModel):
         return cls._pk_register.get(pk)
 
     def __init__(self, **kwargs):
-        super(SimpleModel, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         assert self.pk not in self._pk_register, (
             f"Class {self.__class__.__name__} tried to overshadow object "
             f"{self._pk_register[self.pk]} with {self} in the class register."

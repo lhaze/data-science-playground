@@ -3,7 +3,7 @@ import abc
 from itertools import chain
 from enum import Enum
 
-from rising_sun.models.base import BaseModel
+from rising_sun.models.base import SimpleModel
 
 
 class LocationType(Enum):
@@ -18,7 +18,7 @@ class RewardType(Enum):
     RONINS = 'ronins'
 
 
-class Location(BaseModel):
+class Location(SimpleModel):
     name = None
 
     @abc.abstractproperty
@@ -60,7 +60,7 @@ class Shrine(Location):
         # self.validate_model_type(self.kami, 'Kami')
 
 
-class Connection(BaseModel):
+class Connection(SimpleModel):
 
     yaml_tag = 'connection'
     descriptor_fields = ('a', 'b')
@@ -90,7 +90,7 @@ class Connection(BaseModel):
         )
 
 
-class Map(BaseModel):
+class Map(SimpleModel):
 
     yaml_tag = 'map'
     regions = ()
@@ -130,7 +130,7 @@ class Map(BaseModel):
         )
 
 
-class Board(BaseModel):
+class Board(SimpleModel):
 
     yaml_tag = 'board'
     map = None
