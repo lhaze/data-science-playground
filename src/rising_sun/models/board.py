@@ -3,7 +3,7 @@ import abc
 from itertools import chain
 from enum import Enum
 
-from rising_sun.models.base import SimpleModel
+from rising_sun.models.base import get_model, SimpleModel
 
 
 class LocationType(Enum):
@@ -19,14 +19,10 @@ class RewardType(Enum):
 
 
 class Location(SimpleModel):
-    name = None
 
     @abc.abstractproperty
     def type(self):
         pass
-
-    def validate(self):
-        assert self.name
 
 
 class Region(Location):
@@ -34,39 +30,87 @@ class Region(Location):
     class_symbol = "藩"
     type = LocationType.REGION
     # reward = None
+    name = None
+
+    @property
+    def pk(self):
+        return self.name
 
     def validate(self):
-        super().validate()
+        assert self.name
         # assert self.reward in RewardType
 
 
 class ClanReserve(Location):
+    """
+    >>> reserves = ClanReserve.sample()
+    >>> r = reserves[0]
+    >>> r
+    ClanReserve(Lotus)
+    >>> ClanReserve.get('Koi')
+    ClanReserve(Koi)
+    """
     yaml_tag = LocationType.RESERVE.value
     type = LocationType.RESERVE
     clan = None
 
+    @property
+    def pk(self):
+        return self.clan.name
+
     def validate(self):
-        super().validate()
         self.validate_model_type(self.clan, 'Clan')
+
+    def __repr__(self):
+        return f"ClanReserve({self.clan.name})"
+
+    @classmethod
+    def sample(cls):
+        clans = get_model('Clan').sample()
+        return [cls(clan=c) for c in clans]
 
 
 class Shrine(Location):
     yaml_tag = LocationType.SHRINE.value
     type = LocationType.SHRINE
     kami = None
+    number = None
+
+    @property
+    def pk(self):
+        return self.number
 
     def validate(self):
-        super().validate()
+        assert self.number
         # self.validate_model_type(self.kami, 'Kami')
 
 
 class Connection(SimpleModel):
+    """
+    >>> c12 = Connection(a=1, b=2)
+    >>> c21 = Connection(a=2, b=1)
+    >>> c12s = Connection(a=1, b=2, is_sea=True)
+    >>> c12
+    陸(a=1, b=2)
+    >>> c12s
+    海(a=1, b=2)
+    >>> c12 == c21
+    True
+    >>> c12 == c12s
+    True
+    >>> Connection.get((1, 2)) is c12
+    True
+    """
 
     yaml_tag = 'connection'
     descriptor_fields = ('a', 'b')
     a = None
     b = None
     is_sea = False
+
+    @property
+    def pk(self):
+        return (self.a, self.b)
 
     @property
     def class_symbol(self):
@@ -77,15 +121,9 @@ class Connection(SimpleModel):
         assert self.b
 
     def __eq__(self, other):
-        """
-        >>> Connection(a=1, b=2) == Connection(a=2, b=1)
-        True
-        >>> Connection(a=1, b=2, is_sea=True) == Connection(a=1, b=2)
-        False
-        """
         if not isinstance(other, Connection):
             return False
-        return self.is_sea == other.is_sea and (
+        return (
             (self.a, self.b) == (other.a, other.b) or (self.b, self.a) == (other.a, other.b)
         )
 

@@ -9,6 +9,11 @@ from utils.serialization import yaml, ExtLoader
 from utils.traits import Entity
 
 
+def get_model(name):
+    from . import __models__
+    return __models__.get(name)
+
+
 class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
 
     def __init__(cls, *args, **kwargs):
@@ -94,17 +99,23 @@ class SimpleModel(BaseModel):
 
     _pk_register = {}
 
+    @property
+    def pk(self):
+        return id(self)
+
     @classmethod
     def get(cls, pk):
         return cls._pk_register.get(pk)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        assert self.pk not in self._pk_register, (
-            f"Class {self.__class__.__name__} tried to overshadow object "
-            f"{self._pk_register[self.pk]} with {self} in the class register."
-        )
-        self._pk_register[self.pk] = self
+        if self.pk in self._pk_register:
+            assert self == self._pk_register[self.pk], (
+                f"Class {self.__class__.__name__} tried to overshadow object "
+                f"{self._pk_register[self.pk]} with {self} in the class register."
+            )
+        else:
+            self._pk_register[self.pk] = self
 
 
 class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
