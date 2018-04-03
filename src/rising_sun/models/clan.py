@@ -29,7 +29,7 @@ class Clan(DbModel):
     def test(cls):
         """
         >>> Clan.test()
-        >>> Clan._query.all()
+        >>> Clan.query.all()
         [族(Lotus), 族(Koi)]
         """
         [c.save() for c in cls.sample()]

@@ -29,8 +29,6 @@ class Region(Location):
     yaml_tag = LocationType.REGION.value
     class_symbol = "藩"
     type = LocationType.REGION
-    # reward = None
-    name = None
 
     @property
     def pk(self):

@@ -3,7 +3,7 @@ from utils.imports import get_all_names
 from utils.serialization import load_from_filename
 from utils.oss import dirname, path
 
-from .base import BaseModel, DbModel, SimpleModel
+from .base import get_model, BaseModel, DbModel, SimpleModel
 
 
 def is_model(cls):

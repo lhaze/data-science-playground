@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import abc
+import typing as t
+from functools import lru_cache
 
 from pyDatalog import pyDatalog, pyParser
 from sqlalchemy.ext.declarative import declarative_base
@@ -55,14 +57,6 @@ class BaseModel(Entity, yaml.YAMLObject, metaclass=ModelMeta):
     @property
     def descriptor_fields(self):
         return sorted(name for name in self.__dict__ if not name.startswith('_'))
-
-    @property
-    def pk(self):
-        """
-        Describes primary key of the instance.
-        Supply `name` field in the concrete subclasses or reimplement it.
-        """
-        return self.name
 
     @abc.abstractclassmethod
     def get(cls, pk):
@@ -122,20 +116,20 @@ class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
     pass
 
 
-DbModel = declarative_base(
+class DbModel(declarative_base(
     bind=get_db_engine(),
     cls=BaseModel,
     metaclass=DbModelMeta,
     name='DbModel'
-)
+)):
+    query = get_session_factory().query_property()
 
 
-def save(model: DbModel, commit: bool = True):
-    session = model.metadata.session
-    session.add(model)
-    if commit:
-        session.commit()
+    def save(self, commit: bool = True):
+        session = self.metadata.session
+        session.add(self)
+        if commit:
+            session.commit()
 
-
-DbModel._query = get_session_factory().query_property()
-DbModel.save = save
+    def get(self, pk: t.Any):
+        return self.query.get(pk)
