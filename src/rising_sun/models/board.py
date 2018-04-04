@@ -3,6 +3,8 @@ import abc
 from itertools import chain
 from enum import Enum
 
+import colander as c
+
 from rising_sun.models.base import get_model, SimpleModel
 
 
@@ -25,10 +27,15 @@ class Location(SimpleModel):
         pass
 
 
+class RegionSchema(c.MappingSchema):
+    name = c.SchemaNode(c.String(), validator=c.Length(1, 10))
+
+
 class Region(Location):
     yaml_tag = LocationType.REGION.value
     class_symbol = "藩"
     type = LocationType.REGION
+    __schema__ = RegionSchema()
 
     @property
     def pk(self):

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import abc
 import typing as t
-from functools import lru_cache
 
 from pyDatalog import pyDatalog, pyParser
 from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun.database import get_db_engine, get_session_factory
-from utils.serialization import yaml, ExtLoader
-from utils.traits import Entity
+from utils.serialization import c, yaml, ExtLoader
 
 
 def get_model(name):
@@ -46,7 +44,7 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
         raise AttributeError
 
 
-class BaseModel(Entity, yaml.YAMLObject, metaclass=ModelMeta):
+class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     yaml_constructor = ExtLoader
 
@@ -92,6 +90,7 @@ class BaseModel(Entity, yaml.YAMLObject, metaclass=ModelMeta):
 class SimpleModel(BaseModel):
 
     _pk_register = {}
+    __schema__ = None  # type: c.Schema
 
     @property
     def pk(self):
@@ -102,7 +101,11 @@ class SimpleModel(BaseModel):
         return cls._pk_register.get(pk)
 
     def __init__(self, **kwargs):
+        if self.__schema__:
+            kwargs = self.__schema__.deserialize(kwargs)
+
         super().__init__(**kwargs)
+
         if self.pk in self._pk_register:
             assert self == self._pk_register[self.pk], (
                 f"Class {self.__class__.__name__} tried to overshadow object "
@@ -113,7 +116,9 @@ class SimpleModel(BaseModel):
 
 
 class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
-    pass
+    def __init__(cls, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        cls.__schema__ = c.SQLAlchemySchemaNode(cls) if hasattr(cls, '__table__') else None
 
 
 class DbModel(declarative_base(
@@ -122,8 +127,13 @@ class DbModel(declarative_base(
     metaclass=DbModelMeta,
     name='DbModel'
 )):
+    __abstract__ = True
     query = get_session_factory().query_property()
 
+    def __init__(self, **kwargs):
+        if self.__schema__:
+            self.__schema__.deserialize(kwargs)
+        super().__init__(**kwargs)
 
     def save(self, commit: bool = True):
         session = self.metadata.session

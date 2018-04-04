@@ -2,8 +2,16 @@
 import os
 import json
 
+import colander as c
+from colanderalchemy.schema import SQLAlchemySchemaNode
 from ruamel import yaml
 from typing import Any, IO
+
+
+# importing whole colander here is a way to:
+# * abstractize from the dependency on colander implementation of schemas (we might need some shims)
+# * gather schema classes from other packages (ie. ColanderAlchemy) in one place
+c.SQLAlchemySchemaNode = SQLAlchemySchemaNode
 
 
 class ExtLoader(yaml.Loader):
