@@ -47,6 +47,7 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
 class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     yaml_constructor = ExtLoader
+    __schema__ = None  # type: c.Schema
 
     @property
     def class_symbol(self):
@@ -86,11 +87,16 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
     def dump(self):
         return yaml.dump(self)
 
+    def validate(self):
+        if not self.__schema__:
+            return
+        serialized = self.__schema__.serialize()
+        return self.__schema__.deserialize(serialized)
+
 
 class SimpleModel(BaseModel):
 
     _pk_register = {}
-    __schema__ = None  # type: c.Schema
 
     @property
     def pk(self):
