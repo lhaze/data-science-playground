@@ -11,5 +11,3 @@ map: !<map>
 shrines:
 - !<shrine> {name: Shrine 1}
 - !<shrine> {name: Shrine 2}
-- !<shrine> {name: Shrine 3}
-- !<shrine> {name: Shrine 4}

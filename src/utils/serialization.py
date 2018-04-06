@@ -11,7 +11,13 @@ from typing import Any, IO
 # importing whole colander here is a way to:
 # * abstractize from the dependency on colander implementation of schemas (we might need some shims)
 # * gather schema classes from other packages (ie. ColanderAlchemy) in one place
+# * add own SchemaTypes (ie. Instance)
+class Instance(c.SchemaType):
+    pass
+
+
 c.SQLAlchemySchemaNode = SQLAlchemySchemaNode
+c.Instance = Instance
 
 
 class ExtLoader(yaml.Loader):
