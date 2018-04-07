@@ -9,11 +9,6 @@ from rising_sun.database import get_db_engine, get_session_factory
 from utils.serialization import c, yaml, ExtLoader
 
 
-def get_model(name):
-    from . import __models__
-    return __models__.get(name)
-
-
 class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
 
     def __init__(cls, *args, **kwargs):
@@ -149,3 +144,8 @@ class DbModel(declarative_base(
 
     def get(self, pk: t.Any):
         return self.query.get(pk)
+
+
+def get_model(name: str) -> BaseModel:
+    from . import __models__
+    return __models__.get(name)

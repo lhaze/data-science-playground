@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import typing as t
+
+
+def import_entity(entity_path: str) -> t.Any:
+    module_name, class_name = entity_path.split(':')
+    entity_module = __import__(module_name, globals(), locals(), (class_name, ))
+    return getattr(entity_module, class_name)
 
 
 def get_all_names(_file, _name, _filter=lambda obj: True):

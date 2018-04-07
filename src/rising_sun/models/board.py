@@ -3,7 +3,7 @@ import abc
 from itertools import chain
 from enum import Enum
 
-import colander as c
+from utils.serialization import c
 
 from rising_sun.models.base import get_model, SimpleModel
 
@@ -27,8 +27,9 @@ class Location(SimpleModel):
         pass
 
 
-class RegionSchema(c.MappingSchema):
+class RegionSchema(c.Schema):
     name = c.SchemaNode(c.String(), validator=c.Length(1, 10))
+    reward = c.SchemaNode(c.Mapping())
 
 
 class Region(Location):
@@ -41,9 +42,9 @@ class Region(Location):
     def pk(self):
         return self.name
 
-    def validate(self):
-        assert self.name
-        # assert self.reward in RewardType
+
+class ClanReserveSchema(c.Schema):
+    clan = c.SchemaNode(c.Instance('rising_sun.models.clan:Clan'))
 
 
 class ClanReserve(Location):
@@ -57,14 +58,11 @@ class ClanReserve(Location):
     """
     yaml_tag = LocationType.RESERVE.value
     type = LocationType.RESERVE
-    clan = None
+    __schema__ = ClanReserveSchema()
 
     @property
     def pk(self):
         return self.clan.name
-
-    def validate(self):
-        self.validate_model_type(self.clan, 'Clan')
 
     def __repr__(self):
         return f"ClanReserve({self.clan.name})"
@@ -84,10 +82,6 @@ class Shrine(Location):
     @property
     def pk(self):
         return self.number
-
-    def validate(self):
-        assert self.number
-        # self.validate_model_type(self.kami, 'Kami')
 
 
 class Connection(SimpleModel):
@@ -161,9 +155,9 @@ class Map(SimpleModel):
     def sample(cls):
         return cls(
             regions=[
-                Region(name='Nagato'),
-                Region(name='Shikoku'),
-                Region(name='Kansai'),
+                Region(name='Nagato', reward={}),
+                Region(name='Shikoku', reward={}),
+                Region(name='Kansai', reward={}),
             ],
             connections=[
                 Connection(a='Nagato', b='Kansai'),
