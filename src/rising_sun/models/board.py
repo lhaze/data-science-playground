@@ -3,6 +3,7 @@ import abc
 from itertools import chain
 from enum import Enum
 
+from utils.functools import reify
 from utils.serialization import c
 
 from rising_sun.models.base import get_model, SimpleModel
@@ -34,7 +35,6 @@ class RegionSchema(c.Schema):
 
 class Region(Location):
     yaml_tag = LocationType.REGION.value
-    class_symbol = "藩"
     type = LocationType.REGION
     __schema__ = RegionSchema()
 
@@ -64,9 +64,6 @@ class ClanReserve(Location):
     def pk(self):
         return self.clan.name
 
-    def __repr__(self):
-        return f"ClanReserve({self.clan.name})"
-
     @classmethod
     def sample(cls):
         clans = get_model('Clan').sample()
@@ -87,16 +84,6 @@ class Shrine(Location):
 class Connection(SimpleModel):
     """
     >>> c12 = Connection(a=1, b=2)
-    >>> c21 = Connection(a=2, b=1)
-    >>> c12s = Connection(a=1, b=2, is_sea=True)
-    >>> c12
-    陸(a=1, b=2)
-    >>> c12s
-    海(a=1, b=2)
-    >>> c12 == c21
-    True
-    >>> c12 == c12s
-    True
     >>> Connection.get((1, 2)) is c12
     True
     """
@@ -107,17 +94,9 @@ class Connection(SimpleModel):
     b = None
     is_sea = False
 
-    @property
+    @reify
     def pk(self):
-        return (self.a, self.b)
-
-    @property
-    def class_symbol(self):
-        return '海' if self.is_sea else '陸'
-
-    def validate(self):
-        assert self.a
-        assert self.b
+        return min(self.a, self.b), max(self.a, self.b)
 
     def __eq__(self, other):
         if not isinstance(other, Connection):

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from functools import update_wrapper
+from functools import update_wrapper, lru_cache  # noqa
 from typing import (
     Any,
     Callable,

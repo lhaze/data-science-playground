@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from rising_sun.database import create_tables
+from rising_sun import db_repo
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -9,4 +9,4 @@ def init_db():
     """
     Returns session-wide initialised database.
     """
-    create_tables()
+    db_repo.create_tables()

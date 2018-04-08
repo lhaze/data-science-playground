@@ -5,7 +5,8 @@ import typing as t
 from pyDatalog import pyDatalog, pyParser
 from sqlalchemy.ext.declarative import declarative_base
 
-from rising_sun.database import get_db_engine, get_session_factory
+from rising_sun import simple_repo
+from rising_sun import db_repo
 from utils.serialization import c, yaml, ExtLoader
 
 
@@ -19,7 +20,7 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
             """ responds to instance.method by asking datalog engine """
             if name not in cls.__terms__:
                 # the call is a normal getattr
-                raise AttributeError
+                raise AttributeError  # iff attribute name is not a term, attribute is not found
             # the call is trying to touch a pyDatalog term
             predicate_name = "%s.%s[1]==" % (cls.__name__, name)
             terms = (pyParser.Term('_pyD_class', forced_type='constant'), instance, pyParser.Term("X"))  # prefixed
@@ -57,6 +58,8 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
         """Returns the instance marked with given primary key"""
 
     def __init__(self, **kwargs):
+        if self.__schema__:
+            kwargs = self.__schema__.deserialize(kwargs)
         self.__dict__.update(kwargs)
         super().__init__()
 
@@ -71,13 +74,7 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
     def __repr__(self):
-        return '{0}({1})'.format(
-            self.class_symbol,
-            ", ".join(
-                "{}={}".format(name, getattr(self, name))
-                for name in self.descriptor_fields
-            )
-        )
+        return f'{self.__class__.__name__}({self.pk})'
 
     def dump(self):
         return yaml.dump(self)
@@ -91,29 +88,19 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
 class SimpleModel(BaseModel):
 
-    _pk_register = {}
-
     @property
     def pk(self):
         return id(self)
 
-    @classmethod
-    def get(cls, pk):
-        return cls._pk_register.get(pk)
-
     def __init__(self, **kwargs):
-        if self.__schema__:
-            kwargs = self.__schema__.deserialize(kwargs)
-
         super().__init__(**kwargs)
+        simple_repo.push(self)
 
-        if self.pk in self._pk_register:
-            assert self == self._pk_register[self.pk], (
-                f"Class {self.__class__.__name__} tried to overshadow object "
-                f"{self._pk_register[self.pk]} with {self} in the class register."
-            )
-        else:
-            self._pk_register[self.pk] = self
+    def __setstate__(self, d):
+        if self.__schema__:
+            d = self.__schema__.deserialize(d)
+        self.__dict__.update(d)
+        simple_repo.push(self)
 
 
 class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
@@ -123,18 +110,13 @@ class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
 
 
 class DbModel(declarative_base(
-    bind=get_db_engine(),
+    bind=db_repo.get_db_engine(),
     cls=BaseModel,
     metaclass=DbModelMeta,
     name='DbModel'
 )):
     __abstract__ = True
-    query = get_session_factory().query_property()
-
-    def __init__(self, **kwargs):
-        if self.__schema__:
-            self.__schema__.deserialize(kwargs)
-        super().__init__(**kwargs)
+    query = db_repo.get_session_factory().query_property()
 
     def save(self, commit: bool = True):
         session = self.metadata.session
