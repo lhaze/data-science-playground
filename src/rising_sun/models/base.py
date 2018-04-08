@@ -5,8 +5,7 @@ import typing as t
 from pyDatalog import pyDatalog, pyParser
 from sqlalchemy.ext.declarative import declarative_base
 
-from rising_sun import simple_repo
-from rising_sun import db_repo
+from rising_sun import config_repo, db_repo
 from utils.serialization import c, yaml, ExtLoader
 
 
@@ -86,7 +85,7 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
         return self.__schema__.deserialize(serialized)
 
 
-class SimpleModel(BaseModel):
+class ConfigModel(BaseModel):
 
     @property
     def pk(self):
@@ -94,13 +93,13 @@ class SimpleModel(BaseModel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        simple_repo.push(self)
+        config_repo.add(self)
 
     def __setstate__(self, d):
         if self.__schema__:
             d = self.__schema__.deserialize(d)
         self.__dict__.update(d)
-        simple_repo.push(self)
+        config_repo.add(self)
 
 
 class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):

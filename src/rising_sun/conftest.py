@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from rising_sun import db_repo
+from rising_sun import config_repo, db_repo
 
 
 @pytest.fixture(scope="session", autouse=True)
 def init_db():
     """
-    Returns session-wide initialised database.
+    Initializes database session-wide.
     """
     db_repo.create_tables()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_config_models():
+    """
+    Initializes config session-wide.
+    """
+    config_repo.sample()

@@ -6,7 +6,7 @@ from enum import Enum
 from utils.functools import reify
 from utils.serialization import c
 
-from rising_sun.models.base import get_model, SimpleModel
+from rising_sun.models.base import get_model, ConfigModel
 
 
 class LocationType(Enum):
@@ -21,7 +21,7 @@ class RewardType(Enum):
     RONINS = 'ronins'
 
 
-class Location(SimpleModel):
+class Location(ConfigModel):
 
     @abc.abstractproperty
     def type(self):
@@ -81,7 +81,7 @@ class Shrine(Location):
         return self.number
 
 
-class Connection(SimpleModel):
+class Connection(ConfigModel):
     """
     >>> c12 = Connection(a=1, b=2)
     >>> Connection.get((1, 2)) is c12
@@ -106,7 +106,7 @@ class Connection(SimpleModel):
         )
 
 
-class Map(SimpleModel):
+class Map(ConfigModel):
 
     yaml_tag = 'map'
     regions = ()
@@ -146,7 +146,7 @@ class Map(SimpleModel):
         )
 
 
-class Board(SimpleModel):
+class Board(ConfigModel):
 
     yaml_tag = 'board'
     map = None
