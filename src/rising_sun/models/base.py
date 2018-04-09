@@ -43,18 +43,15 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     yaml_constructor = ExtLoader
     __schema__ = None  # type: c.Schema
+    _pk_key = None
+
+    @classmethod
+    def get_pk(cls, kwargs):
+        return kwargs.get(cls._pk_key)
 
     @property
-    def class_symbol(self):
-        return self.__class__.__name__
-
-    @property
-    def descriptor_fields(self):
-        return sorted(name for name in self.__dict__ if not name.startswith('_'))
-
-    @abc.abstractclassmethod
-    def get(cls, pk):
-        """Returns the instance marked with given primary key"""
+    def pk(self):
+        return getattr(self, self._pk_key) if self._pk_key else id(self)
 
     def __init__(self, **kwargs):
         if self.__schema__:
@@ -87,9 +84,14 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
 class ConfigModel(BaseModel):
 
-    @property
-    def pk(self):
-        return id(self)
+    def __new__(cls, **kwargs):
+        """
+        Instances of ConfigModel are unique with respect to the primary key, defined with `pk`
+        property. The value of the property are values of the attribute described with `_pk_key`
+        iff it is defined, or objects ID otherwise.
+        """
+        instance = config_repo.get(cls.__name__, cls.get_pk(kwargs))
+        return instance if instance else super().__new__(cls)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

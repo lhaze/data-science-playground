@@ -2,7 +2,7 @@
 from collections import defaultdict
 from weakref import WeakValueDictionary
 
-from utils.oss import path, REPO_PATH
+from utils.oss import REPO_PATH
 from utils.serialization import load_from_filename
 
 
@@ -11,9 +11,8 @@ _base_class_name = 'BaseModel'
 CONFIG_DIR = REPO_PATH / 'rising_sun' / 'config'
 
 
-def sample():
-    filename = path(CONFIG_DIR, 'war_phase_workout.yaml')
-    return load_from_filename(filename)
+def load_config(filename):
+    return load_from_filename(CONFIG_DIR / filename)
 
 
 def add(instance):
@@ -38,7 +37,7 @@ def remove(instance):
 
 
 def get(klass_name, pk):
-    return _register[klass_name].get(pk)
+    return _register[klass_name].get(pk) if pk else None
 
 
 def clear():

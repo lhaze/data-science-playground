@@ -3,7 +3,6 @@ import abc
 from itertools import chain
 from enum import Enum
 
-from utils.functools import reify
 from utils.serialization import c
 
 from rising_sun.models.base import get_model, ConfigModel
@@ -37,10 +36,7 @@ class Region(Location):
     yaml_tag = LocationType.REGION.value
     type = LocationType.REGION
     __schema__ = RegionSchema()
-
-    @property
-    def pk(self):
-        return self.name
+    _pk_key = 'name'
 
 
 class ClanReserveSchema(c.Schema):
@@ -59,9 +55,10 @@ class ClanReserve(Location):
     yaml_tag = LocationType.RESERVE.value
     type = LocationType.RESERVE
     __schema__ = ClanReserveSchema()
+    _pk_key = 'name'
 
     @property
-    def pk(self):
+    def name(self):
         return self.clan.name
 
     @classmethod
@@ -75,10 +72,7 @@ class Shrine(Location):
     type = LocationType.SHRINE
     kami = None
     number = None
-
-    @property
-    def pk(self):
-        return self.number
+    _pk_key = 'number'
 
 
 class Connection(ConfigModel):
@@ -89,12 +83,11 @@ class Connection(ConfigModel):
     """
 
     yaml_tag = 'connection'
-    descriptor_fields = ('a', 'b')
     a = None
     b = None
     is_sea = False
 
-    @reify
+    @property
     def pk(self):
         return min(self.a, self.b), max(self.a, self.b)
 

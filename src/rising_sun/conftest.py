@@ -17,4 +17,4 @@ def load_config_models():
     """
     Initializes config session-wide.
     """
-    config_repo.sample()
+    config_repo.load_config('war_phase_workout.yaml')
