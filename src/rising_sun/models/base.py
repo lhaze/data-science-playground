@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-import abc
 import typing as t
 
 from pyDatalog import pyDatalog, pyParser
 from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun import config_repo, db_repo
-from utils.serialization import c, yaml, ExtLoader
+from utils.serialization import yaml, ExtLoader
+from utils import validation as v
 
 
 class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
@@ -42,7 +42,7 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
 class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     yaml_constructor = ExtLoader
-    __schema__ = None  # type: c.Schema
+    __schema__ = None  # type: v.Schema
     _pk_key = None
 
     @classmethod
@@ -107,7 +107,7 @@ class ConfigModel(BaseModel):
 class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
     def __init__(cls, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        cls.__schema__ = c.SQLAlchemySchemaNode(cls) if hasattr(cls, '__table__') else None
+        cls.__schema__ = v.SQLAlchemySchemaNode(cls) if hasattr(cls, '__table__') else None
 
 
 class DbModel(declarative_base(

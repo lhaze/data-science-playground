@@ -3,7 +3,7 @@ import abc
 from itertools import chain
 from enum import Enum
 
-from utils.serialization import c
+from utils import validation as v
 
 from rising_sun.models.base import get_model, ConfigModel
 
@@ -27,9 +27,9 @@ class Location(ConfigModel):
         pass
 
 
-class RegionSchema(c.Schema):
-    name = c.SchemaNode(c.String(), validator=c.Length(1, 10))
-    reward = c.SchemaNode(c.Mapping())
+class RegionSchema(v.Schema):
+    name = v.SchemaNode(v.String(), validator=v.Length(1, 10))
+    reward = v.SchemaNode(v.Mapping())
 
 
 class Region(Location):
@@ -39,8 +39,8 @@ class Region(Location):
     _pk_key = 'name'
 
 
-class ClanReserveSchema(c.Schema):
-    clan = c.SchemaNode(c.Instance('rising_sun.models.clan:Clan'))
+class ClanReserveSchema(v.Schema):
+    clan = v.SchemaNode(v.Instance('rising_sun.models.clan:Clan'))
 
 
 class ClanReserve(Location):
