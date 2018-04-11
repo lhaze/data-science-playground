@@ -2,11 +2,12 @@
 import typing as t
 
 from pyDatalog import pyDatalog, pyParser
+from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun import config_repo, db_repo
-from utils.serialization import yaml, ExtLoader
 from utils import validation as v
+from utils.serialization import yaml, CustomLoader
 
 
 class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
@@ -41,22 +42,32 @@ class ModelMeta(yaml.YAMLObjectMetaclass, pyDatalog.metaMixin):
 
 class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
-    yaml_constructor = ExtLoader
-    __schema__ = None  # type: v.Schema
-    _pk_key = None
+    yaml_constructor = CustomLoader
+    __schema__: v.Schema = None
+    _pk_keys: tuple = None
+    context: str = None
 
     @classmethod
     def get_pk(cls, kwargs):
-        return kwargs.get(cls._pk_key)
+        if not cls._pk_keys:
+            return
+        return tuple(kwargs.get(key) for key in cls._pk_keys)
+
+    @classmethod
+    def _validate(cls, d: t.Mapping):
+        if not cls.__schema__:
+            return d
+        return cls.__schema__.deserialize(d)
 
     @property
     def pk(self):
-        return getattr(self, self._pk_key) if self._pk_key else id(self)
+        if not self._pk_keys:
+            return (self.context, id(self))
+        return tuple(getattr(self, key) for key in self._pk_keys)
 
     def __init__(self, **kwargs):
-        if self.__schema__:
-            kwargs = self.__schema__.deserialize(kwargs)
-        self.__dict__.update(kwargs)
+        validated_kwargs = self._validate(kwargs)
+        self.__dict__.update(validated_kwargs)
         super().__init__()
 
     def __getstate__(self):
@@ -70,37 +81,32 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.pk})'
+        return f'{self.__class__.__name__}({", ".join(map(str, self.pk))})'
 
     def dump(self):
         return yaml.dump(self)
-
-    def validate(self):
-        if not self.__schema__:
-            return
-        serialized = self.__schema__.serialize()
-        return self.__schema__.deserialize(serialized)
 
 
 class ConfigModel(BaseModel):
 
     def __new__(cls, **kwargs):
         """
-        Instances of ConfigModel are unique with respect to the primary key, defined with `pk`
-        property. The value of the property are values of the attribute described with `_pk_key`
+        Instances of ConfigModel are unique with respect to the primary keys, defined with `pk`
+        property. The value of the property are values of the attribute described with `_pk_keys`
         iff it is defined, or objects ID otherwise.
         """
-        instance = config_repo.get(cls.__name__, cls.get_pk(kwargs))
-        return instance if instance else super().__new__(cls)
+        instance: ConfigModel = config_repo.get(cls.__name__, cls.get_pk(kwargs))
+        if instance:
+            return instance
+        return super().__new__(cls)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         config_repo.add(self)
 
     def __setstate__(self, d):
-        if self.__schema__:
-            d = self.__schema__.deserialize(d)
-        self.__dict__.update(d)
+        validated_d = self._validate(d)
+        self.__dict__.update(validated_d)
         config_repo.add(self)
 
 
@@ -117,16 +123,8 @@ class DbModel(declarative_base(
     name='DbModel'
 )):
     __abstract__ = True
+    context = Column(String(20), primary_key=True)
     query = db_repo.get_session_factory().query_property()
-
-    def save(self, commit: bool = True):
-        session = self.metadata.session
-        session.add(self)
-        if commit:
-            session.commit()
-
-    def get(self, pk: t.Any):
-        return self.query.get(pk)
 
 
 def get_model(name: str) -> BaseModel:

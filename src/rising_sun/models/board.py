@@ -5,6 +5,7 @@ from enum import Enum
 
 from utils import validation as v
 
+from rising_sun import config_repo
 from rising_sun.models.base import get_model, ConfigModel
 
 
@@ -22,6 +23,8 @@ class RewardType(Enum):
 
 class Location(ConfigModel):
 
+    _pk_keys = ('context', 'name')
+
     @abc.abstractproperty
     def type(self):
         pass
@@ -36,7 +39,6 @@ class Region(Location):
     yaml_tag = LocationType.REGION.value
     type = LocationType.REGION
     __schema__ = RegionSchema()
-    _pk_key = 'name'
 
 
 class ClanReserveSchema(v.Schema):
@@ -48,14 +50,13 @@ class ClanReserve(Location):
     >>> reserves = ClanReserve.sample()
     >>> r = reserves[0]
     >>> r
-    ClanReserve(Lotus)
-    >>> ClanReserve.get('Koi')
-    ClanReserve(Koi)
+    ClanReserve(None, Lotus)
+    >>> config_repo.get('ClanReserve', (None, 'Koi'))
+    ClanReserve(None, Koi)
     """
     yaml_tag = LocationType.RESERVE.value
     type = LocationType.RESERVE
     __schema__ = ClanReserveSchema()
-    _pk_key = 'name'
 
     @property
     def name(self):
@@ -71,14 +72,16 @@ class Shrine(Location):
     yaml_tag = LocationType.SHRINE.value
     type = LocationType.SHRINE
     kami = None
-    number = None
-    _pk_key = 'number'
 
 
 class Connection(ConfigModel):
     """
     >>> c12 = Connection(a=1, b=2)
-    >>> Connection.get((1, 2)) is c12
+    >>> c12
+    Connection(None, 1, 2)
+    >>> config_repo.get('Connection', (None, 1, 2)) is c12
+    True
+    >>> c12 == Connection(a=2, b=1)
     True
     """
 
@@ -86,10 +89,11 @@ class Connection(ConfigModel):
     a = None
     b = None
     is_sea = False
+    _pk_keys = ('context', 'a', 'b')
 
-    @property
-    def pk(self):
-        return min(self.a, self.b), max(self.a, self.b)
+    def __init__(self, **kwargs):
+        super(Connection, self).__init__(**kwargs)
+        self.a, self.b = min(self.a, self.b), max(self.a, self.b)
 
     def __eq__(self, other):
         if not isinstance(other, Connection):
@@ -115,7 +119,7 @@ class Map(ConfigModel):
     def __repr__(self):
         """
         >>> Map.sample()
-        Map(regions=[Nagato,Shikoku,Kansai], connections=[(Nagato,Kansai),(Nagato,Shikoku),(Shikoku,Kansai)])
+        Map(regions=[Nagato,Shikoku,Kansai], connections=[(Kansai,Nagato),(Nagato,Shikoku),(Kansai,Shikoku)])
 
         """
         return "Map(regions=[{}], connections=[{}])".format(

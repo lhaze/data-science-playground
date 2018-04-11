@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import typing as t
 from functools import lru_cache
 
 from sqlalchemy import create_engine
@@ -38,3 +39,14 @@ def create_tables(drop=False):
     DbModel.metadata.create_all()
     DbModel.metadata.session = session
     return DbModel.metadata.tables
+
+
+def add(instance: 'DbModel', commit: bool = True):
+    session = instance.metadata.session
+    session.add(instance)
+    if commit:
+        session.commit()
+
+
+def get(klass: t.Type['DbModel'], pk: t.Any):
+    return klass.query.get(pk)
