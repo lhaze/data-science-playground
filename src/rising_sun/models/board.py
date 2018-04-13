@@ -68,28 +68,38 @@ class ClanReserve(Location):
         return [cls(clan=c) for c in clans]
 
 
+class ShrineSchema(v.Schema):
+    name = v.SchemaNode(v.String(), validator=v.Length(1, 10))
+    # kami = v.SchemaNode(v.Instance('rising_sun.models.kami:Kami'), default=None)
+    pass
+
+
 class Shrine(Location):
     yaml_tag = LocationType.SHRINE.value
     type = LocationType.SHRINE
-    kami = None
+    __schema__ = ShrineSchema()
+
+
+class ConnectionSchema(v.Schema):
+    a = v.SchemaNode(v.String())
+    b = v.SchemaNode(v.String())
+    is_sea = v.SchemaNode(v.Bool(), missing=False)
 
 
 class Connection(ConfigModel):
     """
-    >>> c12 = Connection(a=1, b=2)
+    >>> c12 = Connection(a='1', b='2')
     >>> c12
     Connection(None, 1, 2)
-    >>> config_repo.get('Connection', (None, 1, 2)) is c12
+    >>> config_repo.get('Connection', (None, '1', '2')) is c12
     True
-    >>> c12 == Connection(a=2, b=1)
+    >>> c12 == Connection(a='2', b='1')
     True
     """
 
     yaml_tag = 'connection'
-    a = None
-    b = None
-    is_sea = False
     _pk_keys = ('context', 'a', 'b')
+    __schema__ = ConnectionSchema()
 
     def __init__(self, **kwargs):
         super(Connection, self).__init__(**kwargs)
@@ -103,18 +113,29 @@ class Connection(ConfigModel):
         )
 
 
+class MapSchema(v.Schema):
+    @v.instantiate()
+    class regions(v.SequenceSchema):
+        region = v.SchemaNode(v.Instance(Region))
+
+    @v.instantiate()
+    class connections(v.SequenceSchema):
+        connection = v.SchemaNode(v.Instance(Connection))
+
+    @staticmethod
+    def validator(form, value):
+        regions_of_connections = set(chain.from_iterable((c.a, c.b) for c in value['connections']))
+        all_regions = set(r.name for r in value['regions'])
+        if regions_of_connections != all_regions:
+            raise v.Invalid(form, (
+                f'Regions defined by connections ({regions_of_connections}) '
+                f'do not match all regions provided ({all_regions})'
+            ))
+
+
 class Map(ConfigModel):
-
     yaml_tag = 'map'
-    regions = ()
-    connections = ()
-
-    def validate(self):
-        all(r.validate() for r in self.regions)
-        all(c.validate() for c in self.connections)
-        # validate all regions are connected
-        regions_of_connections = chain.from_iterable((c.a, c.b) for c in self.connections)
-        assert set(regions_of_connections) == set(r.name for r in self.regions)
+    __schema__ = MapSchema()
 
     def __repr__(self):
         """
@@ -143,15 +164,17 @@ class Map(ConfigModel):
         )
 
 
+class BoardSchema(v.Schema):
+    map = v.SchemaNode(v.Instance(Map))
+
+    @v.instantiate(missing=())
+    class shrines(v.SequenceSchema):
+        shrine = v.SchemaNode(v.Instance(Shrine))
+
+
 class Board(ConfigModel):
-
     yaml_tag = 'board'
-    map = None
-    shrines = ()
-
-    def validate(self):
-        self.map.validate()
-        all(s.validate() for s in self.shrines)
+    __schema__ = BoardSchema()
 
     @classmethod
     def sample(cls):

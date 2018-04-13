@@ -54,10 +54,10 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
         return tuple(kwargs.get(key) for key in cls._pk_keys)
 
     @classmethod
-    def _validate(cls, d: t.Mapping):
+    def _validate(cls, dictionary: t.Mapping):
         if not cls.__schema__:
-            return d
-        return cls.__schema__.deserialize(d)
+            return dictionary
+        return cls.__schema__.deserialize(dictionary)
 
     @property
     def pk(self):
@@ -104,9 +104,9 @@ class ConfigModel(BaseModel):
         super().__init__(**kwargs)
         config_repo.add(self)
 
-    def __setstate__(self, d):
-        validated_d = self._validate(d)
-        self.__dict__.update(validated_d)
+    def __setstate__(self, state: t.Mapping):
+        validated_state = self._validate(state)
+        self.__dict__.update(validated_state)
         config_repo.add(self)
 
 
