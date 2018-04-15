@@ -26,8 +26,8 @@ class CustomLoader(yaml.Loader):
     def construct_yaml_object(self, node: t.Any, cls: t.Any) -> t.Any:
         state = self.construct_mapping(node, deep=True)
         data = cls.__new__(cls, **state)
-        yield data
         data.__setstate__(state)
+        yield data
 
 
 def construct_include(loader: CustomLoader, node: yaml.Node) -> t.Any:

@@ -7,6 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from rising_sun import config_repo, db_repo
 from utils import validation as v
+from utils.itertools import recursive_get
 from utils.serialization import yaml, CustomLoader
 
 
@@ -51,7 +52,7 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
     def get_pk(cls, kwargs):
         if not cls._pk_keys:
             return
-        return tuple(kwargs.get(key) for key in cls._pk_keys)
+        return tuple(recursive_get(kwargs, key) for key in cls._pk_keys)
 
     @classmethod
     def _validate(cls, dictionary: t.Mapping):
@@ -63,7 +64,7 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
     def pk(self):
         if not self._pk_keys:
             return (self.context, id(self))
-        return tuple(getattr(self, key) for key in self._pk_keys)
+        return tuple(recursive_get(self, key) for key in self._pk_keys)
 
     def __init__(self, **kwargs):
         validated_kwargs = self._validate(kwargs)

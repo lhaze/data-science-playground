@@ -69,3 +69,21 @@ def is_sequence(obj):
     """
     return not isinstance(obj, (str, bytes, Mapping)) and \
         isinstance(obj, (Sequence, generator_type, ndarray))
+
+
+def recursive_get(obj, key, default=None):
+    if '.' not in key:
+        return getattr(obj, key, default)
+    value = obj
+    for fragment in key.split('.'):
+        if isinstance(value, Mapping):
+            try:
+                value = value.get(fragment)
+            except KeyError:
+                return default
+        else:
+            try:
+                value = getattr(value, fragment)
+            except AttributeError:
+                return default
+    return value

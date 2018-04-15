@@ -81,36 +81,42 @@ class Shrine(Location):
 
 
 class ConnectionSchema(v.Schema):
-    a = v.SchemaNode(v.String())
-    b = v.SchemaNode(v.String())
+    a = v.SchemaNode(v.Instance(Region))
+    b = v.SchemaNode(v.Instance(Region))
     is_sea = v.SchemaNode(v.Bool(), missing=False)
+
+    @staticmethod
+    def validator(form, value):
+        if value['a'] == value['b']:
+            raise v.Invalid(form, f"Source and destination should be different: {value['a']}")
 
 
 class Connection(ConfigModel):
     """
-    >>> c12 = Connection(a='1', b='2')
+    >>> r1 = Region(name='1', reward={})
+    >>> r2 = Region(name='2', reward={})
+    >>> c12 = Connection(a=r1, b=r2)
     >>> c12
     Connection(None, 1, 2)
     >>> config_repo.get('Connection', (None, '1', '2')) is c12
     True
-    >>> c12 == Connection(a='2', b='1')
+    >>> c12 == Connection(a=r2, b=r1)
     True
     """
 
     yaml_tag = 'connection'
-    _pk_keys = ('context', 'a', 'b')
+    _pk_keys = ('context', 'a.name', 'b.name')
     __schema__ = ConnectionSchema()
 
     def __init__(self, **kwargs):
         super(Connection, self).__init__(**kwargs)
-        self.a, self.b = min(self.a, self.b), max(self.a, self.b)
+        if self.a.name > self.b.name:
+            self.a, self.b = self.b, self.a
 
     def __eq__(self, other):
         if not isinstance(other, Connection):
             return False
-        return (
-            (self.a, self.b) == (other.a, other.b) or (self.b, self.a) == (other.a, other.b)
-        )
+        return (self.a, self.b) == (other.a, other.b)
 
 
 class MapSchema(v.Schema):
@@ -125,7 +131,7 @@ class MapSchema(v.Schema):
     @staticmethod
     def validator(form, value):
         regions_of_connections = set(chain.from_iterable((c.a, c.b) for c in value['connections']))
-        all_regions = set(r.name for r in value['regions'])
+        all_regions = set(value['regions'])
         if regions_of_connections != all_regions:
             raise v.Invalid(form, (
                 f'Regions defined by connections ({regions_of_connections}) '
@@ -145,21 +151,22 @@ class Map(ConfigModel):
         """
         return "Map(regions=[{}], connections=[{}])".format(
             ",".join(r.name for r in self.regions),
-            ",".join("(%s,%s)" % (c.a, c.b) for c in self.connections),
+            ",".join("(%s,%s)" % (c.a.name, c.b.name) for c in self.connections),
         )
 
     @classmethod
     def sample(cls):
+        regions = [
+            Region(name='Nagato', reward={}),
+            Region(name='Shikoku', reward={}),
+            Region(name='Kansai', reward={}),
+        ]
         return cls(
-            regions=[
-                Region(name='Nagato', reward={}),
-                Region(name='Shikoku', reward={}),
-                Region(name='Kansai', reward={}),
-            ],
+            regions=regions,
             connections=[
-                Connection(a='Nagato', b='Kansai'),
-                Connection(a='Nagato', b='Shikoku',  is_sea=True),
-                Connection(a='Shikoku', b='Kansai',  is_sea=True),
+                Connection(a=regions[0], b=regions[2]),
+                Connection(a=regions[0], b=regions[1],  is_sea=True),
+                Connection(a=regions[1], b=regions[2],  is_sea=True),
             ],
         )
 
