@@ -1,0 +1,45 @@
+---
+
+Region: &regions
+- &Edo  !<region> {name: Edo, reward: {coins: 1, ronins: 1}}
+- &Shikoku !<region> {name: Shikoku, reward: {ronins: 3}}
+- &Kansai  !<region> {name: Kansai, reward: {vps: 3}}
+
+Connection: &connections
+- !<connection> {a: *Edo, b: *Kansai}
+- !<connection> {a: *Edo, b: *Shikoku, is_sea: true}
+- !<connection> {a: *Shikoku, b: *Kansai, is_sea: true}
+
+Map: &map !<map>
+  regions: *regions
+  connections: *connections
+
+Board: &board !<board>
+  map: *map
+
+Advantage:
+- !<advantage> {name: Seppuku, procedure: seppuku}
+- !<advantage> {name: Take hostage, procedure: take_hostage}
+- !<advantage> {name: Hire ronin, procedure: hire_ronin}
+- !<advantage> {name: Undertake battle, procedure: undertake_battle}
+- !<advantage> {name: Imperial poets, procedure: imperial_poets}
+
+ClanType:
+- &Koi !<clantype>
+  name: Koi,
+  color: red,
+  starting_honor: 1,
+  starting_coins: 5,
+  region: *Edo
+- &Fox !<clantype>
+  name: Fox,
+  color: orange,
+  starting_honor: 6,
+  starting_coins: 4,
+  region: *Kansai
+- &Dragonfly !<clantype>
+  name: Dragonfly,
+  color: blue,
+  starting_honor: 3,
+  starting_coins: 5,
+  region: *Shikoku
