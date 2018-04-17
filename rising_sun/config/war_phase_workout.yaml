@@ -1,0 +1,18 @@
+---
+
+regions: &regions
+- &Nagato  !<region> {name: Nagato, reward: {coins: 1, ronins: 1}}
+- &Shikoku !<region> {name: Shikoku, reward: {ronins: 3}}
+- &Kansai  !<region> {name: Kansai, reward: {vps: 3}}
+
+connections: &connections
+- !<connection> {a: *Nagato, b: *Kansai}
+- !<connection> {a: *Nagato, b: *Shikoku, is_sea: true}
+- !<connection> {a: *Shikoku, b: *Kansai, is_sea: true}
+
+map: &map !<map>
+  regions: *regions
+  connections: *connections
+
+board: &board !<board>
+  map: *map

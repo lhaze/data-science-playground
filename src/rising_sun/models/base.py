@@ -81,6 +81,10 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
         """
         return {k: v for k, v in self.__dict__.items() if not k.startswith('_')}
 
+    def __setstate__(self, state: t.Mapping):
+        validated_state = self._validate(state)
+        self.__dict__.update(validated_state)
+
     def __repr__(self):
         return f'{self.__class__.__name__}({", ".join(map(str, self.pk))})'
 
@@ -106,8 +110,7 @@ class ConfigModel(BaseModel):
         config_repo.add(self)
 
     def __setstate__(self, state: t.Mapping):
-        validated_state = self._validate(state)
-        self.__dict__.update(validated_state)
+        super().__setstate__(state)
         config_repo.add(self)
 
 

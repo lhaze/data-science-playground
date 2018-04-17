@@ -15,12 +15,6 @@ class LocationType(Enum):
     RESERVE = 'reserve'
 
 
-class RewardType(Enum):
-    VICTORY_POINTS = 'VPs'
-    COINS = 'coins'
-    RONINS = 'ronins'
-
-
 class Location(ConfigModel):
 
     _pk_keys = ('context', 'name')
@@ -32,7 +26,7 @@ class Location(ConfigModel):
 
 class RegionSchema(v.Schema):
     name = v.SchemaNode(v.String(), validator=v.Length(1, 10))
-    reward = v.SchemaNode(v.Mapping())
+    reward = v.SchemaNode(v.Instance('rising_sun.models.gains:Gain'))
 
 
 class Region(Location):
