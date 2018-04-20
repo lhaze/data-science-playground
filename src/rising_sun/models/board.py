@@ -40,14 +40,6 @@ class ClanReserveSchema(v.Schema):
 
 
 class ClanReserve(Location):
-    """
-    >>> reserves = ClanReserve.sample()
-    >>> r = reserves[0]
-    >>> r
-    ClanReserve(None, Lotus)
-    >>> config_repo.get('ClanReserve', (None, 'Koi'))
-    ClanReserve(None, Koi)
-    """
     yaml_tag = LocationType.RESERVE.value
     type = LocationType.RESERVE
     __schema__ = ClanReserveSchema()
@@ -55,11 +47,6 @@ class ClanReserve(Location):
     @property
     def name(self):
         return self.clan.name
-
-    @classmethod
-    def sample(cls):
-        clans = get_model('Clan').sample()
-        return [cls(clan=c) for c in clans]
 
 
 class ShrineSchema(v.Schema):
@@ -97,7 +84,6 @@ class Connection(ConfigModel):
     >>> c12 == Connection(a=r2, b=r1)
     True
     """
-
     yaml_tag = 'connection'
     _pk_keys = ('context', 'a.name', 'b.name')
     __schema__ = ConnectionSchema()

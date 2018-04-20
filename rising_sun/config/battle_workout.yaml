@@ -17,12 +17,12 @@ Map: &map !<map>
 Board: &board !<board>
   map: *map
 
-Advantage:
-- !<advantage> {name: Seppuku, procedure: seppuku}
-- !<advantage> {name: Take hostage, procedure: take_hostage}
-- !<advantage> {name: Hire ronin, procedure: hire_ronin}
-- !<advantage> {name: Undertake battle, procedure: undertake_battle}
-- !<advantage> {name: Imperial poets, procedure: imperial_poets}
+#Advantage:
+#- !<advantage> {name: Seppuku, procedure: seppuku}
+#- !<advantage> {name: Take hostage, procedure: take_hostage}
+#- !<advantage> {name: Hire ronin, procedure: hire_ronin}
+#- !<advantage> {name: Undertake battle, procedure: undertake_battle}
+#- !<advantage> {name: Imperial poets, procedure: imperial_poets}
 
 ClanType:
 - &Koi !<clantype>

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
+from functools import lru_cache
 from weakref import WeakValueDictionary
 
 from utils.oss import REPO_PATH
@@ -38,6 +39,11 @@ def remove(instance):
 
 def get(klass_name, pk):
     return _register[klass_name].get(pk) if pk else None
+
+
+@lru_cache(maxsize=64)
+def filter(klass_name, condition):
+    return [model for pk, model in _register[klass_name].items() if condition(pk)]
 
 
 def clear():

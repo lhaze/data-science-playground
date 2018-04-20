@@ -1,0 +1,10 @@
+---
+
+Battle: &battles
+- !<battle> {name: Nagato, season: spring, order: 1}
+- !<battle> {name: Shikoku, season: spring, order: 2}
+
+Clan:
+- &Koi !<clan> {type: Koi, vps: 0, coins: 10, ronins: 4}
+- &Fox !<clan> {type: Fox, vps: 0, coins: 3, ronins: 0}
+- &Dragonfly !<clan> {type: Dragonfly, vps: 0, conins: 6, , ronins: 1}
