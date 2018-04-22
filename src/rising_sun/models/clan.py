@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from enum import Enum
+
 from sqlalchemy import Column, Unicode
 from sqlalchemy.orm.mapper import validates
 
@@ -7,11 +9,17 @@ from utils import validation as v
 from utils.functools import reify
 
 
+class ClanColors(Enum):
+    red = 'red'
+    orange = 'orange'
+    blue = 'blue'
+
+
 class ClanTypeSchema(v.Schema):
-    name = 'Koi'
-    color = 'red'
-    starting_honor = 1
-    starting_coins: 5
+    name = v.SchemaNode(v.String(), validator=v.Length(max=20))
+    color = v.SchemaNode(v.String(), validator=v.OneOf(c.value for c in ClanColors))
+    starting_honor = v.SchemaNode(v.Integer(), validator=v.Range(1, 10))
+    starting_coins = v.SchemaNode(v.Integer(), validator=v.Range(1, 10))
     region = v.SchemaNode(v.Instance('rising_sun.models.board:Region'))
 
 

@@ -26,20 +26,20 @@ Board: &board !<board>
 
 ClanType:
 - &Koi !<clantype>
-  name: Koi,
-  color: red,
-  starting_honor: 1,
-  starting_coins: 5,
+  name: Koi
+  color: red
+  starting_honor: 1
+  starting_coins: 5
   region: *Edo
 - &Fox !<clantype>
-  name: Fox,
-  color: orange,
-  starting_honor: 6,
-  starting_coins: 4,
+  name: Fox
+  color: orange
+  starting_honor: 6
+  starting_coins: 4
   region: *Kansai
 - &Dragonfly !<clantype>
-  name: Dragonfly,
-  color: blue,
-  starting_honor: 3,
-  starting_coins: 5,
+  name: Dragonfly
+  color: blue
+  starting_honor: 3
+  starting_coins: 5
   region: *Shikoku

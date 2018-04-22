@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+from collections import abc
 from itertools import tee
 from numpy import ndarray
-from typing import Iterable, Mapping, Sequence, Tuple
+from typing import Iterable, Sequence, Tuple
 
 
 def transpose(items: Iterable) -> list:
@@ -67,16 +68,14 @@ def is_sequence(obj):
     >>> is_sequence({})
     False
     """
-    return not isinstance(obj, (str, bytes, Mapping)) and \
+    return not isinstance(obj, (str, bytes, abc.Mapping)) and \
         isinstance(obj, (Sequence, generator_type, ndarray))
 
 
 def recursive_get(obj, key, default=None):
-    if '.' not in key:
-        return getattr(obj, key, default)
     value = obj
     for fragment in key.split('.'):
-        if isinstance(value, Mapping):
+        if isinstance(value, abc.Mapping):
             try:
                 value = value.get(fragment)
             except KeyError:

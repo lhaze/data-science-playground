@@ -17,4 +17,5 @@ def load_config_models():
     """
     Initializes config session-wide.
     """
+    config_repo.clear()
     config_repo.load_config('battle_workout.yaml')
