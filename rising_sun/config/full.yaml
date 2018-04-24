@@ -1,0 +1,43 @@
+---
+Region: &regions
+- &Hokkaido !<region> {name: Hokkaido, reward: {ronins: 2}}
+- &Oshu !<region> {name: Oshu, reward: {coins: 3}}
+- &Edo !<region> {name: Edo, reward: {vps: 2, coins: 2}}
+- &Kyoto !<region> {name: Kyoto, reward: {vps: 4}}
+- &Kansai !<region> {name: Kansai, reward: {vps: 3}}
+- &Nagato !<region> {name: Nagato, reward: {coins: 1, ronins: 1}}
+- &Shikoku !<region> {name: Shikoku, reward: {ronins: 3}}
+- &Kyushu !<region> {name: Kyushu, reward: {coins: 1, ronins: 1}}
+
+Shrine: &shrines
+- !<shrine> {name: shrine 1}
+- !<shrine> {name: shrine 2}
+- !<shrine> {name: shrine 3}
+- !<shrine> {name: shrine 4}
+
+Connection: &connections
+- !<connection> {a: *Hokkaido, b: *Oshu, is_sea: true}
+- !<connection> {a: *Hokkaido, b: *Kansai, is_sea: true}
+- !<connection> {a: *Hokkaido, b: *Kyushu, is_sea: true}
+- !<connection> {a: *Oshu, b: *Edo}
+- !<connection> {a: *Oshu, b: *Kyoto}
+- !<connection> {a: *Kyoto, b: *Kansai}
+- !<connection> {a: *Kansai, b: *Nagato}
+- !<connection> {a: *Kansai, b: *Shikoku, is_sea: true}
+- !<connection> {a: *Kansai, b: *Kyushu, is_sea: true}
+- !<connection> {a: *Shikoku, b: *Kyushu, is_sea: true}
+
+Map: &map !<map>
+  regions: *regions
+  connections: *connections
+
+Board: &board !<board>
+  map: *map
+  shrines: *shrines
+
+Advantage:
+- !<advantage> {name: Seppuku, procedure: seppuku}
+- !<advantage> {name: Take hostage, procedure: take_hostage}
+- !<advantage> {name: Hire ronin, procedure: hire_ronin}
+- !<advantage> {name: Undertake battle, procedure: undertake_battle}
+- !<advantage> {name: Imperial poets, procedure: imperial_poets}
