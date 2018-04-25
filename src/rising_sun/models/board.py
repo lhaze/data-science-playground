@@ -17,7 +17,7 @@ class LocationType(Enum):
 
 class Location(ConfigModel):
 
-    _pk_keys = ('context', 'name')
+    __pks__ = ('context', 'name')
 
     @abc.abstractproperty
     def type(self):
@@ -85,7 +85,7 @@ class Connection(ConfigModel):
     True
     """
     yaml_tag = 'connection'
-    _pk_keys = ('context', 'a.name', 'b.name')
+    __pks__ = ('context', 'a.name', 'b.name')
     __schema__ = ConnectionSchema()
 
     def __init__(self, **kwargs):

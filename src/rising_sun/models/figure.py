@@ -28,7 +28,7 @@ class FigureTypeSchema(v.Schema):
 
 class FigureType(ConfigModel):
     yaml_tag = 'figure type'
-    _pk_keys = ('context', 'name')
+    __pks__ = ('context', 'name')
     __schema__ = FigureTypeSchema()
 
 
@@ -38,7 +38,7 @@ class Figure(DbModel):
     * `location == None` means the figure is out of game
     """
     __tablename__ = 'figure'
-    _pk_keys = ('context', 'id')
+    __pks__ = ('context', 'id')
 
     id = Column(Integer, primary_key=True)
     type_name = Column(Unicode(20))

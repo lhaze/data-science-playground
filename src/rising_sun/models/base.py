@@ -45,14 +45,14 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     yaml_constructor = CustomLoader
     __schema__: v.Schema = None
-    _pk_keys: tuple = None
+    __pks__: tuple = None
     context: str = None
 
     @classmethod
     def get_pk(cls, kwargs):
-        if not cls._pk_keys:
+        if not cls.__pks__:
             return
-        return tuple(recursive_get(kwargs, key) for key in cls._pk_keys)
+        return tuple(recursive_get(kwargs, key) for key in cls.__pks__)
 
     @classmethod
     def _validate(cls, dictionary: t.Mapping):
@@ -62,9 +62,9 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
     @property
     def pk(self):
-        if not self._pk_keys:
+        if not self.__pks__:
             return (self.context, id(self))
-        return tuple(recursive_get(self, key) for key in self._pk_keys)
+        return tuple(recursive_get(self, key) for key in self.__pks__)
 
     def __init__(self, **kwargs):
         validated_kwargs = self._validate(kwargs)
@@ -97,7 +97,7 @@ class ConfigModel(BaseModel):
     def __new__(cls, **kwargs):
         """
         Instances of ConfigModel are unique with respect to the primary keys, defined with `pk`
-        property. The value of the property are values of the attribute described with `_pk_keys`
+        property. The value of the property are values of the attribute described with `__pks__`
         iff it is defined, or objects ID otherwise.
         """
         instance: 'ConfigModel' = config_repo.get(cls.__name__, cls.get_pk(kwargs))

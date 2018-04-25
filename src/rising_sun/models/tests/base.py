@@ -5,7 +5,7 @@ from ..base import *
 
 
 class ConfigModelWoSchema(ConfigModel):
-    _pk_keys = ('attr1', 'attr2')
+    __pks__ = ('attr1', 'attr2')
 
 
 def test_config_model_pk():
@@ -37,7 +37,7 @@ def SerializingSchema():
 @pytest.fixture
 def SerializedConfigModel(SerializingSchema):
     class SerializedConfigModel(ConfigModel):
-        _pk_keys = ('attr1', 'attr2')
+        __pks__ = ('attr1', 'attr2')
         __schema__ = SerializingSchema()
     return SerializedConfigModel
 

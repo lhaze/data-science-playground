@@ -23,5 +23,5 @@ GainSchema = type(
 
 
 class Gain(BaseModel):
-    _pk_keys = tuple(gain_type.value for gain_type in GainType)
+    __pks__ = tuple(gain_type.value for gain_type in GainType)
     __schema__ = GainSchema(v.Mapping(unknown='raise'))

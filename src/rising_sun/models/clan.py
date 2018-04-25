@@ -25,13 +25,13 @@ class ClanTypeSchema(v.Schema):
 
 class ClanType(ConfigModel):
     yaml_tag = 'clan_type'
-    _pk_keys = ('context', 'name')
+    __pks__ = ('context', 'name')
     __schema__ = ClanTypeSchema()
 
 
 class Clan(DbModel):
     __tablename__ = 'clan'
-    _pk_keys = ('context', 'name')
+    __pks__ = ('context', 'name')
 
     name = Column(Unicode(20), primary_key=True)
     assets = None
