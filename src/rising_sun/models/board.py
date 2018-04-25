@@ -25,7 +25,7 @@ class Location(ConfigModel):
 
 
 class RegionSchema(v.Schema):
-    name = v.SchemaNode(v.String(), validator=v.Length(1, 10))
+    name = v.SchemaNode(v.String(), validator=v.Length(1, 20))
     reward = v.SchemaNode(v.Instance('rising_sun.models.gains:Gain'))
 
 
@@ -50,7 +50,7 @@ class ClanReserve(Location):
 
 
 class ShrineSchema(v.Schema):
-    name = v.SchemaNode(v.String(), validator=v.Length(1, 10))
+    name = v.SchemaNode(v.String(), validator=v.Length(1, 20))
     # kami = v.SchemaNode(v.Instance('rising_sun.models.kami:Kami'), default=None)
     pass
 

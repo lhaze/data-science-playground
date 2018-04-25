@@ -100,7 +100,7 @@ class ConfigModel(BaseModel):
         property. The value of the property are values of the attribute described with `_pk_keys`
         iff it is defined, or objects ID otherwise.
         """
-        instance: ConfigModel = config_repo.get(cls.__name__, cls.get_pk(kwargs))
+        instance: 'ConfigModel' = config_repo.get(cls.__name__, cls.get_pk(kwargs))
         if instance:
             return instance
         return super().__new__(cls)

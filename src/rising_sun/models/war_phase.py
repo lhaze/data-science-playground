@@ -23,9 +23,9 @@ class AdvantageBid(DbModel):
     _pk_keys = ('context', 'name')
 
     advantage_name = Column(Unicode(20), primary_key=True)
-    clan_name = Column(Unicode, ForeignKey('clan.name'), primary_key=True)
+    clan_name = Column(Unicode(20), ForeignKey('clan.name'), primary_key=True)
     clan = relationship("Clan")
-    coins = Column(Integer)
+    coins = Column(Integer())
 
     @reify
     def advantage(self):

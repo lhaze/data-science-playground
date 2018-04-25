@@ -24,7 +24,7 @@ class ClanTypeSchema(v.Schema):
 
 
 class ClanType(ConfigModel):
-    yaml_tag = 'clantype'
+    yaml_tag = 'clan_type'
     _pk_keys = ('context', 'name')
     __schema__ = ClanTypeSchema()
 
