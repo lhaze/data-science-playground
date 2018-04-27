@@ -20,14 +20,14 @@ Under development:
 * `pdfx`, `requests`, `lxml`, `PySpark`
 
 #### [rising_sun](rising_sun)
-* process modelling in logic of a game model
-* the board game of [Rising Sun](https://boardgamegeek.com/boardgame/205896/rising-sun)
-* input: game rules, game setup, bot attunement
+* process modelling using programming in logic (Datalog±)
 * automated planning and plan revision
-* output: a Datalog program
+* multiagent system of players using [InteRRaP](https://www.dfki.de/web/forschung/publikationen/renameFileForDownload?filename=RR-93-26.pdf&file_id=uploads_1751) architecture (an ancient design of [DAI](https://en.wikipedia.org/wiki/Distributed_artificial_intelligence))
+* the theme of the process is a board game of [Rising Sun](https://boardgamegeek.com/boardgame/205896/rising-sun)
+* input: game rules, game setup configuration, bot attunement
+* output: a Datalog program for planning & plan execution
 * side-effect: an AI for the game
-* `pyDatalog`, `...`
-
+* `pyDatalog`, `SQLAlchemy`, `colander` & own model micro-framework, `asciimatics`
 
 Ideas:
 ---
@@ -51,14 +51,6 @@ Ideas:
 * modelling concepts of harmful user activity
 * multi-layer rule-based rough classifiers
 * `PySpark`, log parsing, `scikit-learn`
-
-#### netrunner logic
-* modelling in logic the game of [Android Netrunner](https://en.wikipedia.org/wiki/Android:_Netrunner)
-* input: (board) game rules
-* automated planning and plan revision
-* output: Prolog/Datalog program
-* side-effect: AI for the game
-* `pyDatalog`, `netrunner-cards-json`
 
 #### Jupiter clouds recognition
 * physics-based visual data analysis
