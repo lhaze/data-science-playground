@@ -4,7 +4,8 @@ from enum import Enum
 from sqlalchemy import Column, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship
 
-from rising_sun.models.base import config_repo, ConfigModel, DbModel
+from rising_sun import config_repo
+from rising_sun.models.base import ConfigModel, DbModel
 from utils import validation as v
 from utils.functools import reify
 

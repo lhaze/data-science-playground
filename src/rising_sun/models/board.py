@@ -6,7 +6,7 @@ from enum import Enum
 from utils import validation as v
 
 from rising_sun import config_repo
-from rising_sun.models.base import get_model, ConfigModel
+from rising_sun.models.base import ConfigModel
 
 
 class LocationType(Enum):
@@ -19,9 +19,9 @@ class Location(ConfigModel):
 
     __pks__ = ('context', 'name')
 
-    @abc.abstractproperty
+    @property
     def type(self):
-        pass
+        raise NotImplementedError
 
 
 class RegionSchema(v.Schema):

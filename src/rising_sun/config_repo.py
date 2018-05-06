@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import typing as t
 from collections import defaultdict
 from functools import lru_cache
 from weakref import WeakValueDictionary
@@ -16,7 +17,7 @@ def load_config(filename):
     return load_from_filename(CONFIG_DIR / filename)
 
 
-def add(instance):
+def add(instance: 'ConfigModel'):
     for klass in instance.__class__.mro():
         if klass.__name__ == _base_class_name:
             return
@@ -30,19 +31,19 @@ def add(instance):
         _register[klass.__name__][instance.pk] = instance
 
 
-def remove(instance):
+def remove(instance: 'ConfigModel'):
     for klass in instance.__class__.mro():
         _register[klass.__name__].pop(instance.pk)
         if klass == _base_class_name:
             return
 
 
-def get(klass_name, pk):
+def get(klass_name: str, pk: t.Tuple):
     return _register[klass_name].get(pk) if pk else None
 
 
 @lru_cache(maxsize=64)
-def filter(klass_name, condition):
+def filter(klass_name: str, condition: t.Callable[[t.Tuple], bool]):
     return [model for pk, model in _register[klass_name].items() if condition(pk)]
 
 

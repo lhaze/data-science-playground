@@ -48,5 +48,6 @@ def add(instance: 'DbModel', commit: bool = True):
         session.commit()
 
 
-def get(klass: t.Type['DbModel'], pk: t.Any):
+def get(klass: str, pk: t.Any):
+    # TODO get klass based on its name
     return klass.query.get(pk)
