@@ -4,6 +4,7 @@ import typing as t
 from pyDatalog import pyDatalog, pyParser
 from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative.base import _add_attribute, _as_declarative
 
 from rising_sun import config_repo, db_repo
 from utils import validation as v
@@ -94,30 +95,37 @@ class BaseModel(yaml.YAMLObject, metaclass=ModelMeta):
 
 class ConfigModel(BaseModel):
 
+    repo = config_repo  # this dependency will be injected
+
     def __new__(cls, **kwargs):
         """
         Instances of ConfigModel are unique with respect to the primary keys, defined with `pk`
         property. The value of the property are values of the attribute described with `__pks__`
         iff it is defined, or objects ID otherwise.
         """
-        instance: 'ConfigModel' = config_repo.get(cls.__name__, cls.get_pk(kwargs))
+        instance: 'ConfigModel' = cls.repo.get(cls.__name__, cls.get_pk(kwargs))
         if instance:
             return instance
         return super().__new__(cls)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        config_repo.add(self)
+        self.__class__.repo.add(self)
 
     def __setstate__(self, state: t.Mapping):
         super().__setstate__(state)
-        config_repo.add(self)
+        self.__class__.repo.add(self)
 
 
 class DbModelMeta(ModelMeta, pyDatalog.sqlMetaMixin):
-    def __init__(cls, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(cls, classname, bases, dict_):
+        if '_decl_class_registry' not in cls.__dict__:
+            _as_declarative(cls, classname, cls.__dict__)
+        type.__init__(cls, classname, bases, dict_)
         cls.__schema__ = v.SQLAlchemySchemaNode(cls) if hasattr(cls, '__table__') else None
+
+    def __setattr__(cls, key, value):
+        _add_attribute(cls, key, value)
 
 
 class DbModel(declarative_base(
