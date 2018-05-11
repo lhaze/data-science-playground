@@ -12,11 +12,5 @@ class Game(DbModel):
     id = Column(Integer, primary_key=True)
     config = Column(Unicode(20))
 
-    @classmethod
-    def build_from_yaml(cls, filepath):
-        board = cls.build_board(filepath)
-        return Game(board=board)
-
-    @classmethod
-    def build_board(cls, filepath):
-        return None
+    def resolve(self, action: dict):
+        pass
