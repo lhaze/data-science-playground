@@ -4,7 +4,7 @@ from collections import defaultdict
 from functools import lru_cache
 from weakref import WeakValueDictionary
 
-from utils.oss import REPO_PATH
+from utils.os import REPO_PATH
 from utils.serialization import load_from_filename
 
 

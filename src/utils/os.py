@@ -14,7 +14,7 @@ def ensure_dir_exists(filepath):
     return filepath
 
 
-def project_path_iter(repo_name='data-science-playground'):
+def project_path_iter(repo_name='dsp'):
     for p in Path.cwd().parts:
         if p == repo_name:
             yield p
