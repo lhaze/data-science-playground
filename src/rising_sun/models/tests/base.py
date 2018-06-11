@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from ..base import *
+from rising_sun import config_repo
+from utils import validation as v
 
 
-class ConfigModelWoSchema(ConfigModel):
+class ConfigModelWoSchema(config_repo.Model):
     __pks__ = ('attr1', 'attr2')
 
 
@@ -36,7 +37,7 @@ def SerializingSchema():
 
 @pytest.fixture
 def SerializedConfigModel(SerializingSchema):
-    class SerializedConfigModel(ConfigModel):
+    class SerializedConfigModel(config_repo.Model):
         __pks__ = ('attr1', 'attr2')
         __schema__ = SerializingSchema()
     return SerializedConfigModel

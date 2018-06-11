@@ -2,10 +2,10 @@
 from sqlalchemy import Column, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship
 
-from rising_sun.models.base import DbModel
+from rising_sun import db_repo
 
 
-class Game(DbModel):
+class Game(db_repo.Model):
     __tablename__ = 'game'
     __pks__ = ('context', 'id')
 

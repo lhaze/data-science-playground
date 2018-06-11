@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-from utils.serialization import yaml  # noqa
+from utils.db_repo import DbRepo
 
-from rising_sun import config_repo, db_repo  # noqa
-from rising_sun.models import Game  # noqa
+from . import config_repo
+from .base_model import DbModelBase, DbModelMeta
+
+
+db_repo = DbRepo(model=DbModelBase, metaclass=DbModelMeta)
+config = config_repo

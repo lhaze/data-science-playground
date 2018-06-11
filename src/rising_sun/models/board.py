@@ -6,7 +6,6 @@ from enum import Enum
 from utils import validation as v
 
 from rising_sun import config_repo
-from rising_sun.models.base import ConfigModel
 
 
 class LocationType(Enum):
@@ -15,7 +14,7 @@ class LocationType(Enum):
     RESERVE = 'reserve'
 
 
-class Location(ConfigModel):
+class Location(config_repo.Model):
 
     __pks__ = ('context', 'name')
 
@@ -72,7 +71,7 @@ class ConnectionSchema(v.Schema):
             raise v.Invalid(form, f"Source and destination should be different: {value['a']}")
 
 
-class Connection(ConfigModel):
+class Connection(config_repo.Model):
     """
     >>> r1 = Region(name='1', reward={})
     >>> r2 = Region(name='2', reward={})
@@ -119,7 +118,7 @@ class MapSchema(v.Schema):
             ))
 
 
-class Map(ConfigModel):
+class Map(config_repo.Model):
     yaml_tag = 'map'
     __schema__ = MapSchema()
 
@@ -159,7 +158,7 @@ class BoardSchema(v.Schema):
         shrine = v.SchemaNode(v.Instance(Shrine))
 
 
-class Board(ConfigModel):
+class Board(config_repo.Model):
     yaml_tag = 'board'
     __schema__ = BoardSchema()
 

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, ForeignKey, Integer, Unicode
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship
 
-from rising_sun import config_repo
-from rising_sun.models.base import ConfigModel, DbModel
+from rising_sun import config_repo, db_repo
 from utils import validation as v
 from utils.functools import reify
 
@@ -13,13 +12,13 @@ class AdvantageSchema(v.Schema):
     procedure = v.SchemaNode(v.String(), validator=v.Length(max=20))
 
 
-class Advantage(ConfigModel):
+class Advantage(config_repo.Model):
     yaml_tag = 'advantage'
     __pks__ = ('context', 'name')
     __schema__ = AdvantageSchema()
 
 
-class AdvantageBid(DbModel):
+class AdvantageBid(db_repo.Model):
     __tablename__ = 'advantage_bid'
     __pks__ = ('context', 'name')
 

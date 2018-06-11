@@ -4,8 +4,7 @@ from enum import Enum
 from sqlalchemy import Column, ForeignKey, Integer, Unicode
 from sqlalchemy.orm import relationship
 
-from rising_sun import config_repo
-from rising_sun.models.base import ConfigModel, DbModel
+from rising_sun import config_repo, db_repo
 from utils import validation as v
 from utils.functools import reify
 
@@ -27,13 +26,13 @@ class FigureTypeSchema(v.Schema):
         category = v.SchemaNode(v.String(), validator=v.OneOf(c.value for c in FigureCategory))
 
 
-class FigureType(ConfigModel):
+class FigureType(config_repo.Model):
     yaml_tag = 'figure type'
     __pks__ = ('context', 'name')
     __schema__ = FigureTypeSchema()
 
 
-class Figure(DbModel):
+class Figure(db_repo.Model):
     """
     * A figure can have more than one type, so `types = List`
     * `location == None` means the figure is out of game

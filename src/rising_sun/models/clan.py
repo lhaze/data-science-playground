@@ -4,8 +4,7 @@ from enum import Enum
 from sqlalchemy import Column, Unicode
 from sqlalchemy.orm.mapper import validates
 
-from rising_sun import config_repo
-from rising_sun.models.base import ConfigModel, DbModel
+from rising_sun import config_repo, db_repo
 from utils import validation as v
 from utils.functools import reify
 
@@ -24,13 +23,13 @@ class ClanTypeSchema(v.Schema):
     region = v.SchemaNode(v.Instance('rising_sun.models.board:Region'))
 
 
-class ClanType(ConfigModel):
+class ClanType(config_repo.Model):
     yaml_tag = 'clan_type'
     __pks__ = ('context', 'name')
     __schema__ = ClanTypeSchema()
 
 
-class Clan(DbModel):
+class Clan(db_repo.Model):
     __tablename__ = 'clan'
     __pks__ = ('context', 'name')
 

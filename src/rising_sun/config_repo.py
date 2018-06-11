@@ -7,6 +7,8 @@ from weakref import WeakValueDictionary
 from utils.os import REPO_PATH
 from utils.serialization import load_from_filename
 
+from .base_model import BaseModel
+
 
 _register = defaultdict(WeakValueDictionary)
 _base_class_name = 'BaseModel'
@@ -17,7 +19,29 @@ def load_config(filename):
     return load_from_filename(CONFIG_DIR / filename)
 
 
-def add(instance: 'ConfigModel'):
+class Model(BaseModel):
+
+    def __new__(cls, **kwargs):
+        """
+        Instances of Model are unique with respect to the primary keys, defined with `pk`
+        property. The value of the property are values of the attribute described with `__pks__`
+        iff it is defined, or objects ID otherwise.
+        """
+        instance: 'Model' = get(cls.__name__, cls.get_pk(kwargs))
+        if instance:
+            return instance
+        return super().__new__(cls)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        add(self)
+
+    def __setstate__(self, state: t.Mapping):
+        super().__setstate__(state)
+        add(self)
+
+
+def add(instance: Model):
     for klass in instance.__class__.mro():
         if klass.__name__ == _base_class_name:
             return
@@ -31,7 +55,7 @@ def add(instance: 'ConfigModel'):
         _register[klass.__name__][instance.pk] = instance
 
 
-def remove(instance: 'ConfigModel'):
+def remove(instance: Model):
     for klass in instance.__class__.mro():
         _register[klass.__name__].pop(instance.pk)
         if klass == _base_class_name:

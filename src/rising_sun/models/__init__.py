@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from utils.imports import get_all_names
 
-from .base import get_model, BaseModel, ConfigModel, DbModel
+from ..base_model import BaseModel
 
 
 def is_model(cls):

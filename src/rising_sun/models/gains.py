@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
 
-from rising_sun.models.base import BaseModel
+from rising_sun.base_model import BaseModel
 from utils import validation as v
 
 
