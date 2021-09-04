@@ -2,6 +2,6 @@
 
 pyDatalog==0.17.1
 frozendict==1.2
-sqlalchemy==1.2.5
-colander==1.4
-ColanderAlchemy==0.3.3
+sqlalchemy==1.4.23
+colander==1.8.3
+ColanderAlchemy==0.3.4

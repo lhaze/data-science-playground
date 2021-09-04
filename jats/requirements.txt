@@ -1,6 +1,6 @@
 -r ../requirements.txt
 
 ruffus==2.6.3
-lxml==3.4.4
-requests==2.8.0
+lxml==4.6.3
+requests==2.26.0
 cached-property==1.3.1
