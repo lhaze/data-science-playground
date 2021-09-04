@@ -1,34 +1,33 @@
-# Python artifacts
-*.py[cod]
+# Python
+__pycache__/
+__pypackages__/
 __pycache__
+*.py[cod]
+*$py.class
 .cache
+.pytest_cache
 
 # devops artifacts
 .eggs
 *.egg-info
 devops/*.retry
-.pytest_cache
-
-# project management
-.vagrant
+build/
+dist/
+.tox
 .coverage
-.coverage-report
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
+coverage.xml
 
 # IDEs
 .idea
 *.swp
 *~
+.vscode
 *.bat
 .TAGS
 
 # IPyNB/Jupyter history
 .ipynb_checkpoints
+
+# DB
+*.db
+*.db-journal
